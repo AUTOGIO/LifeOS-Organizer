@@ -82,11 +82,38 @@ print('inventory id:', records[0]['InventoryID'] if records else 'N/A')
 
 A successful run's own internal validation gate already checks this before publishing (see `QUALITY_GATES.md`); this command is for independent confirmation, e.g. after a manual investigation.
 
+## Verifying the D7 library refactor (one-time, before trusting scripts/03-08 again)
+
+`scripts/03-08` were rewritten as thin wrappers over a new shared `scripts/lib/inventory_engine.zsh` (see `DECISIONS.md` D7). The rewrite was verified structurally (`bash -n`, awk lookup tested against the real config) but never actually executed under zsh before handoff. Confirm it works before relying on it:
+
+1. Run one target you already have a known-good count for, e.g.:
+   ```
+   ./scripts/03_documents_inventory.zsh
+   ```
+2. Compare the new `Completed INV-...` line against the last known-good numbers (Documents: 128,305 files / 17,786 directories as of `INV-20260802-013608`). Expect the new count to be very close — small drift is normal (files change), a large or zero count is not.
+3. If it fails, the failure mode is safe by design: the validation gate refuses to publish a broken result and leaves the prior artifact in place. You'll see `ERROR: Staged artifact validation failed` rather than corrupted output.
+4. Once one target confirms clean, run the rest (`04` through `08`) the same way, one at a time.
+5. Report back the `Completed INV-...` lines (or any error) so the docs can be updated and the refactor marked verified in `DECISIONS.md`.
+
+**2026-08-02 update:** step 1 already ran once and found a real bug — `RUN_DIR`/`LOCK_DIR` scoping caused `cleanup: RUN_DIR: parameter not set` and left a stale lock plus two empty staging-dir husks (inventory data itself was correct and validated; only cleanup failed). Fixed in the library (`DECISIONS.md` D7). Before re-testing, clear the leftovers from that run:
+
+```
+cd /Users/eduardofgiovannini/Documents/GitHub/LifeOS-Organizer
+rm -rf logs/.task03.lock inventory/Documents/.task03.*
+./scripts/03_documents_inventory.zsh
+```
+
+This time it should complete with no `cleanup:` error printed. Confirm with:
+```
+ls logs/.task03.lock inventory/Documents/.task03.* 2>&1
+```
+Both should report "No such file or directory" once the run finishes cleanly.
+
 ## Adding a new inventory target
 
 1. Confirm the target name and path already exist in `config/inventory_targets.yaml` and `inventory/<Target>/` exists (both are already true for all 8 configured targets).
 2. Run `./scripts/02_inventory_engine.zsh` and confirm `READY` with 0 failures.
-3. Clone the most recently added target script (as of this writing, `scripts/04_desktop_inventory.zsh`, cloned from `03_documents_inventory.zsh`) rather than writing from scratch. Change only: the header comment, `TARGET_NAME`, `REPORT_PATH`, `LOCK_DIR`, the `mktemp` template suffix, the awk match string (`$0 == "<Target>:"`), the two user-facing "Configured `<Target>`" / "Another Task N" error strings, and the report title strings. Everything else — locking, staging, validation, atomic publish — stays identical. This is deliberate (`DECISIONS.md` D7): don't parameterize into a shared script until at least three targets are proven identical in practice.
-4. Diff the new script against its parent before running it for the first time — every changed line should be explainable as one of the six items above. Any other difference is a mistake, not a feature.
+3. Add a thin wrapper script (`scripts/0N_<target>_inventory.zsh`) that sets `PROJECT_DIR`, sources `scripts/lib/inventory_engine.zsh`, and calls `run_inventory_task <TASK_NUM> <TargetName>` — copy the shortest existing wrapper (e.g. `08_music_inventory.zsh`) and change only the header comment and the final `run_inventory_task` call.
+4. Only touch `scripts/lib/inventory_engine.zsh` itself if the new target genuinely needs different scan/validation behavior (unlikely for another local folder; likely for CloudStorage/Volumes — see below). A bugfix to the library applies to every target's wrapper at once, so changes there warrant extra care and, ideally, re-running all existing targets afterward to confirm nothing regressed.
 
-External disks and CloudStorage-backed targets require explicit separate approval before this sequence — see `docs/SAFETY_RULES.md`, rule 9.
+External disks and CloudStorage-backed targets require explicit separate approval before this sequence — see `docs/SAFETY_RULES.md`, rule 9. They likely also need engine changes (on-demand download risk, unmount risk) rather than a plain new wrapper — don't assume the existing `run_inventory_task` is sufficient for them without reviewing that first.

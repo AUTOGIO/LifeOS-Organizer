@@ -1,8 +1,8 @@
 LifeOS Organizer — Desktop Metadata Inventory
-Inventory ID: INV-20260802-132721
-Timestamp: 2026-08-02T13:27:21-0300
+Inventory ID: INV-20260802-141614
+Timestamp: 2026-08-02T14:16:14-0300
 Target: /Users/eduardofgiovannini/Desktop
-Runtime: 1 seconds
+Runtime: 0 seconds
 
 Collected: filesystem path, name, extension, type flags, ownership, permissions, size, timestamps, and optional Spotlight type/kind fields.
 Intentionally not collected: document contents, OCR output, document summaries, previews, hashes, duplicate analysis, or semantic classifications.

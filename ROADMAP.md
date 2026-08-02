@@ -4,13 +4,11 @@ Format: Now / Next / Later. Nothing moves left until the item to its left is clo
 
 ## Now
 
-- Clone `scripts/04_desktop_inventory.zsh` into a Downloads script (`05_downloads_inventory.zsh`) and run it — Downloads is next per the original target order.
+- Decide on CloudStorage and Volumes: both need separate explicit approval (`docs/SAFETY_RULES.md` rule 9) before any scan, and likely need engine changes (on-demand download risk for CloudStorage, unmount risk for Volumes) rather than a plain new wrapper over `run_inventory_task` as-is.
 
 ## Next
 
-- Scan the remaining configured targets one at a time: Pictures, Movies, Music.
-- Two targets (Documents, Desktop) are now done and structurally identical — the "rule of three" trigger for deciding whether to fold per-target scripts into one parameterized script (`DECISIONS.md` D7) lands after the next one (Downloads).
-- CloudStorage and Volumes require separate, explicit approval before their first scan (per `docs/SAFETY_RULES.md`, rule 9) — external and cloud-backed paths are not auto-included even though they are already configured.
+- (nothing queued beyond the CloudStorage/Volumes decision above — this is intentionally the current stopping point until that approval is given)
 
 ## Later
 

@@ -7,19 +7,27 @@ config/inventory_targets.yaml   Approved target definitions (name + path)
         │
 templates/inventory_report_template.md   Required report shape (all tasks conform)
         │
-inventory/<Target>/             Per-target staging: metadata.csv, metadata.json, summary.md
+scripts/lib/inventory_engine.zsh   Shared scan/lock/stage/validate/publish logic (D7, 2026-08-02)
         │
-scripts/0N_*.zsh                One script per task; read-only until explicitly extended
+scripts/0N_<target>_inventory.zsh   Thin wrapper: sources the library, names task number + target
+        │
+inventory/<Target>/             Per-target staging: metadata.csv, metadata.json, summary.md
         │
 reports/0N_*.txt + logs/         Human-readable run report + optional debug trace
 ```
 
-Each layer only depends on the layer above it. Adding a new approved target requires touching exactly one file (`config/inventory_targets.yaml`) plus creating its `inventory/<Target>/` directory — no script changes.
+Each layer only depends on the layer above it. Adding a new approved target requires touching exactly one file (`config/inventory_targets.yaml`) plus creating its `inventory/<Target>/` directory, plus a ~15-line wrapper script — no changes to the shared engine unless the target needs genuinely different behavior.
 
-## Execution model (current: `03_documents_inventory.zsh`)
+## History: from six clones to one library (D7)
 
-1. **Preflight.** Confirm running from the repository root; confirm config, template, and output directory exist; resolve the target path from config.
-2. **Lock.** Acquire an mkdir-based execution lock (`logs/.task03.lock`). A live lock aborts the run; a stale lock (dead PID) is reclaimed. Added 2026-08-02 — see `DECISIONS.md`.
+Tasks 03-08 (Documents, Desktop, Downloads, Pictures, Movies, Music) were originally six near-identical scripts, each hand-cloned from the last with exactly six categories of mechanical change (target name, paths, lock dir, error strings). This was deliberate at the time (`DECISIONS.md` D7) — one validated target isn't enough evidence to justify a shared abstraction, and refactoring mid-rollout risks destabilizing an already-working pipeline. Once all 5 non-Documents targets were cloned and validated with zero logic divergence across any of them, that evidence justified folding the shared logic into `scripts/lib/inventory_engine.zsh`, leaving each numbered script as a thin wrapper. `ls scripts/` is still self-documenting and every script still runs with no arguments — the consolidation is invisible from the outside.
+
+## Execution model (shared engine: `scripts/lib/inventory_engine.zsh`, function `run_inventory_task`)
+
+Every wrapper script sets `PROJECT_DIR`, sources the library, and calls `run_inventory_task <TASK_NUM> <TargetName>`. That function does, identically for every target:
+
+1. **Preflight.** Confirm running from the repository root; confirm config, template, and output directory exist; resolve the target path from config via a parameterized `awk` lookup (`-v name="$TARGET_NAME"`, tested against all 8 configured targets).
+2. **Lock.** Acquire an mkdir-based execution lock (`logs/.task<N>.lock`). A live lock aborts the run; a stale lock (dead PID) is reclaimed. Added 2026-08-02 — see `DECISIONS.md`.
 3. **Stage.** Generate a run-unique Inventory ID (`INV-YYYYMMDD-HHMMSS`) and a private `mktemp -d` staging directory under `inventory/<Target>/`. All CSV/JSON/summary/report writes go here, never to the final path.
 4. **Scan.** A single `find -xdev ... -exec stat -f ... {} +` pass walks the target, pruning package directories (`.app`, `.bundle`, `.framework`, `.kext`, `.pages`, `.numbers`, `.key`, `.photo library`, `.sparsebundle`) so they are recorded once and not descended into. `-xdev` prevents crossing mount points (excludes external volumes and network shares by design).
 5. **Emit.** Each entry is written to both CSV and JSON concurrently via open file descriptors (`>&3`, `>&4`), one pass, no second traversal.

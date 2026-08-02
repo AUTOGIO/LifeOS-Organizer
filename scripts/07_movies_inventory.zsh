@@ -1,6 +1,6 @@
 #!/bin/zsh
-# LifeOS Organizer — Task 04
-# Metadata-only inventory for the configured Desktop target.
+# LifeOS Organizer — Task 07
+# Metadata-only inventory for the configured Movies target.
 # This script never opens user documents or follows symlinks.
 # Thin wrapper over the shared engine (scripts/lib/inventory_engine.zsh) —
 # folded here per DECISIONS.md D7 once all 5 local targets were validated
@@ -13,5 +13,5 @@ set -uo pipefail
 PROJECT_DIR='/Users/eduardofgiovannini/Documents/GitHub/LifeOS-Organizer'
 source "$PROJECT_DIR/scripts/lib/inventory_engine.zsh"
 
-run_inventory_task 04 Desktop
+run_inventory_task 07 Movies
 exit $?

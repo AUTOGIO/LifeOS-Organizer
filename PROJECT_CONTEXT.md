@@ -22,15 +22,21 @@ Source: `reports/01_environment_baseline.txt`. No version control is in use — 
 
 ## Current phase
 
-Infrastructure & Inventory. The reusable inventory framework (Task 02) is validated and ready. Two of eight configured targets have completed, validated metadata scans: Documents (Task 03) and Desktop (Task 04). Six remain unscanned: Downloads, Pictures, Movies, Music, CloudStorage, Volumes.
+Infrastructure & Inventory. The reusable inventory framework (Task 02) is validated and ready. Six of eight configured targets have completed, validated metadata scans: Documents (Task 03), Desktop (Task 04), Downloads (Task 05), Pictures (Task 06), Movies (Task 07), Music (Task 08). Two remain unscanned, both requiring separate approval: CloudStorage, Volumes.
+
+Scripts 03-08 were refactored from six hand-cloned files into thin wrappers over a shared `scripts/lib/inventory_engine.zsh` (`DECISIONS.md` D7). Fully verified: all 6 targets rerun clean, one cleanup-trap scoping bug found and fixed along the way, no leftover artifacts anywhere on the final pass.
 
 ## Work completed
 
 - Task 01 — Environment Baseline — done
 - Task 02 — Inventory Engine (framework readiness) — done, 0 failures / 0 warnings
 - Task 02.5 — Process Diagnostics — done, identified 9 stale concurrent Task 03 process trees as the cause of artifact corruption
-- Task 03 — Documents Inventory — done and validated. Inventory ID `INV-20260802-013608`: 128,305 files, 17,786 directories, 161,275,096,221 bytes, 0 errors. `metadata.csv`/`metadata.json` independently confirmed at 146,091 matching records under one consistent Inventory ID.
-- Task 04 — Desktop Inventory — done and validated, clean on first run. Inventory ID `INV-20260802-132721`: 99 files, 21 directories, 99,051,425 bytes, 0 errors. `metadata.csv`/`metadata.json` independently confirmed at 120 matching records under one consistent Inventory ID.
+- Task 03 — Documents Inventory — done and validated under the D7 library refactor. Inventory ID `INV-20260802-141128`: 128,380 files, 17,830 directories, 161,007,433,747 bytes, 0 errors. `metadata.csv`/`metadata.json` independently confirmed at 146,210 matching records under one consistent Inventory ID.
+- Task 04 — Desktop Inventory — done and validated under the D7 library refactor. Inventory ID `INV-20260802-141614`: 99 files, 21 directories, 99,051,425 bytes, 0 errors. `metadata.csv`/`metadata.json` independently confirmed at 120 matching records under one consistent Inventory ID.
+- Task 05 — Downloads Inventory — done and validated under the D7 library refactor. Inventory ID `INV-20260802-141749`: 53 files, 6 directories, 8,546,888 bytes, 0 errors. `metadata.csv`/`metadata.json` independently confirmed at 59 matching records under one consistent Inventory ID.
+- Task 06 — Pictures Inventory — done and validated under the D7 library refactor. Inventory ID `INV-20260802-141844`: 8,656 files, 326 directories, 523,227,442 bytes, 0 errors. `metadata.csv`/`metadata.json` independently confirmed at 8,982 matching records under one consistent Inventory ID.
+- Task 07 — Movies Inventory — done and validated under the D7 library refactor. Inventory ID `INV-20260802-141928`: 49 files, 5 directories, 11,827 bytes, 0 errors. `metadata.csv`/`metadata.json` independently confirmed at 54 matching records under one consistent Inventory ID.
+- Task 08 — Music Inventory — done and validated under the D7 library refactor. Inventory ID `INV-20260802-142008`: 161 files, 23 directories, 132,758,072 bytes, 0 errors. `metadata.csv`/`metadata.json` independently confirmed at 184 matching records under one consistent Inventory ID.
 
 ## What this project intentionally does not do yet
 

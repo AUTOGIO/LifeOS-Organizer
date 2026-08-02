@@ -4,15 +4,36 @@ Architecture decision log. Newest first. Each entry: context, decision, conseque
 
 ---
 
-## D7 — Clone per target instead of parameterizing, until proven otherwise (2026-08-02)
+## D7 — Clone per target instead of parameterizing; refactor point deferred again (2026-08-02)
 
 **Context.** With Task 03 (Documents) validated end-to-end, the next step was scanning additional targets (Desktop, Downloads, Pictures, Movies, Music). Two options: write one parameterized script that takes a target name/path, or clone the validated Task 03 script per target with minimal, mechanical changes.
 
-**Decision.** Clone. `scripts/04_desktop_inventory.zsh` is `03_documents_inventory.zsh` with exactly six categories of change (header comment, `TARGET_NAME`, `REPORT_PATH`, `LOCK_DIR`, `mktemp` suffix, awk match string, user-facing target-name strings, report titles) — every other line, including all locking, staging, and validation logic, is untouched. Confirmed via `diff` before use.
+**Decision (initial).** Clone. `scripts/04_desktop_inventory.zsh` is `03_documents_inventory.zsh` with exactly six categories of change (header comment, `TARGET_NAME`, `REPORT_PATH`, `LOCK_DIR`, `mktemp` suffix, awk match string, user-facing target-name strings, report titles) — every other line, including all locking, staging, and validation logic, is untouched. Confirmed via `diff` before use. `scripts/05_downloads_inventory.zsh` followed the same pattern.
 
-**Consequences.** More files to keep in sync if the shared logic ever needs a fix (as it did twice already for Task 03 — see D4/D5). Accepted deliberately: with only one validated target, a shared/parameterized script would be an abstraction built on a sample size of one, and any target-specific quirk (scale, symlink density, file types) would land in shared code before it's understood. Revisit after Desktop plus one more target are both done and clearly identical in structure — that's a "rule of three" trigger, not before.
+**Rule-of-three checkpoint (2026-08-02, same day).** Three targets now done — Documents (128,305 files, 275s), Desktop (99 files, 1s), Downloads (53 files, 0s) — spanning three orders of magnitude in scale with zero logic divergence across any of them; every diff between clones was exactly the same six mechanical substitutions. That's the signal a shared script would generalize cleanly. Decided **not** to refactor yet anyway: Pictures, Movies, and Music are the same kind of target (local, already-approved, no special handling expected) and cost minutes each to clone versus the regression risk of restructuring an already-validated, in-flight rollout mid-stream. Refactoring is cheaper and safer done once, after all local targets are stable, against five known-good outputs to regression-test against, than done now against three with two more still to come.
 
-**Status.** Implemented. `scripts/04_desktop_inventory.zsh` created, not yet executed against real data.
+**Decision (2026-08-02, later same day — refactor executed).** All 5 local targets (Documents, Desktop, Downloads, Pictures, Movies, Music — 6 scripts counting Documents) completed and validated with zero logic divergence across every clone. Refactored as planned: created `scripts/lib/inventory_engine.zsh` containing every shared function (`section`, `csv_escape`, `json_escape`, `is_package_path`, `emit_csv_row`, `emit_json_row`, `print_ranked_entries`, `print_top_extensions`) plus a new `run_inventory_task <TASK_NUM> <TARGET_NAME>` function holding the full pipeline (preflight, lock, staging, scan, report, validate, publish) — parameterized but otherwise line-for-line the same logic as the validated Task 08 clone. Rewrote `scripts/03-08` as ~15-line thin wrappers that `source` the library and call `run_inventory_task` with their own task number and target name.
+
+**Verification performed before handoff.** (1) `bash -n` against the library with its one zsh-only construct (`<->` numeric glob, present since the original script) neutralized — no other structural errors. (2) The parameterized awk target-lookup tested against the real `config/inventory_targets.yaml` for all 8 configured targets, including the two not yet in use (CloudStorage, Volumes) — all resolved to the correct paths. (3) All 6 wrapper scripts pass `bash -n` outright (no zsh-specific syntax in them). **Not yet done:** an actual zsh execution — no zsh available in the environment this refactor was written in. The real regression test is the operator re-running each target script once and confirming file/directory counts land close to the last known-good numbers, with the built-in validation gate as a safety net (a broken refactor would fail validation and preserve the prior good artifact, not silently corrupt it).
+
+**Consequences.** One shared file to fix instead of 6 for any future bug. Slightly more indirection when reading a single wrapper script in isolation (have to open the library to see what it does) — accepted, since `DECISIONS.md`/`SYSTEM_ARCHITECTURE.md` document the split. CloudStorage and Volumes remain out of scope for this library — they'll likely need their own handling (on-demand download risk, unmount risk) layered on top, not folded into `run_inventory_task` as-is.
+
+**Bug found on first real run (2026-08-02, same day).** Operator ran the refactored `03_documents_inventory.zsh`. The scan/validate/publish pipeline worked correctly — Inventory ID `INV-20260802-140520`, 128,380 files, 17,831 directories, independently confirmed at 146,211 matching CSV/JSON records — but the script printed `cleanup: RUN_DIR: parameter not set` and left a stale `logs/.task03.lock` plus two empty `.task03.XXXXXX` staging-directory husks behind. Root cause: `RUN_DIR` and `LOCK_DIR` were declared `local` inside `run_inventory_task`, so they went out of scope the moment the function returned — but the `EXIT`/`HUP`/`INT`/`TERM` trap fires at the *wrapper script's* process exit, after the function has already returned, and under `set -u` referencing the now-unset locals aborted the cleanup command before it ran. No data loss: the leftover lock self-heals on the next run (dead PID gets reclaimed automatically), and the empty staging dirs held no data since their contents were already `mv`'d out before cleanup would have run. Fixed by declaring both `typeset -g` instead of `local`, matching the same fix already applied to the shared associative arrays for the identical cross-function-boundary reason.
+
+**Re-verified after fix (2026-08-02).** Operator cleared the leftover lock/staging artifacts and reran Task 03: completed with no `cleanup:` error, and both `logs/.task03.lock` and `inventory/Documents/.task03.*` confirmed absent afterward. Inventory ID `INV-20260802-141128`: 128,380 files, 17,830 directories, 161,007,433,747 bytes, independently confirmed at 146,210 matching CSV/JSON records. Documents is verified end-to-end under the refactored engine.
+
+**Status: fully verified (2026-08-02).** All 6 scripts (03-08) reran clean under the fixed library — no `cleanup:` errors, no leftover lock or staging directories anywhere, every CSV/JSON pair independently confirmed matching under a single consistent Inventory ID:
+
+| Task | Target | Inventory ID | Files | Dirs | Records matched |
+|---|---|---|---|---|---|
+| 03 | Documents | `INV-20260802-141128` | 128,380 | 17,830 | 146,210 |
+| 04 | Desktop | `INV-20260802-141614` | 99 | 21 | 120 |
+| 05 | Downloads | `INV-20260802-141749` | 53 | 6 | 59 |
+| 06 | Pictures | `INV-20260802-141844` | 8,656 | 326 | 8,982 |
+| 07 | Movies | `INV-20260802-141928` | 49 | 5 | 54 |
+| 08 | Music | `INV-20260802-142008` | 161 | 23 | 184 |
+
+The D7 refactor is done: one shared library, six thin wrappers, one bug found and fixed on first contact, now fully exercised and trusted.
 
 ---
 

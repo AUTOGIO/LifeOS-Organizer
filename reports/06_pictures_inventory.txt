@@ -1,14 +1,14 @@
-LifeOS Organizer — Documents Metadata Inventory
-Inventory ID: INV-20260802-141128
-Timestamp: 2026-08-02T14:11:28-0300
-Target: /Users/eduardofgiovannini/Documents
-Runtime: 136 seconds
+LifeOS Organizer — Pictures Metadata Inventory
+Inventory ID: INV-20260802-141844
+Timestamp: 2026-08-02T14:18:44-0300
+Target: /Users/eduardofgiovannini/Pictures
+Runtime: 8 seconds
 
 Collected: filesystem path, name, extension, type flags, ownership, permissions, size, timestamps, and optional Spotlight type/kind fields.
 Intentionally not collected: document contents, OCR output, document summaries, previews, hashes, duplicate analysis, or semantic classifications.
-Files: 128380
-Directories: 17830
-Total size: 161007433747 bytes
+Files: 8656
+Directories: 326
+Total size: 523227442 bytes
 Warnings: 1
 Errors: 0
 Safety result: no user files were modified, moved, renamed, deleted, copied, or opened for content inspection.
