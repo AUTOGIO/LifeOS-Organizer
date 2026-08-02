@@ -1,0 +1,138 @@
+LifeOS Organizer — Environment and Safety Baseline
+Project: /Users/eduardofgiovannini/Documents/GitHub/LifeOS-Organizer
+Read-only collection; generated report only.
+
+==============================================================================
+CURRENT CONTEXT
+==============================================================================
+Current date and timezone: 2026-08-01 16:50:48 -03 (-0300)
+Current username: eduardofgiovannini
+Current home directory: /Users/eduardofgiovannini
+Computer name: Eduardo’s MacBook Air
+Hostname: Eduardos-Air-16.localdomain
+Shell: /bin/zsh
+Current project path: /Users/eduardofgiovannini/Documents/GitHub/LifeOS-Organizer
+
+==============================================================================
+MACOS AND HARDWARE
+==============================================================================
+ProductName:		macOS
+ProductVersion:		27.0
+BuildVersion:		26A5378n
+2026-08-01 16:50:49.197 system_profiler[29061:268283] hw.cpufamily: 0x6f5129ac
+Hardware:
+
+    Hardware Overview:
+
+      Model Name: MacBook Air
+      Model Identifier: Mac16,12
+      Model Number: MW0W3LL/A
+      Chip: Apple M4
+      Total Number of Cores: 10 (4 Performance and 6 Efficiency)
+      Memory: 16 GB
+      System Firmware Version: 20457.0.77.0.2
+      OS Loader Version: 20457.0.77.0.2
+      Serial Number (system): HGT4WPV79G
+      Hardware UUID: A896723D-868F-56BA-850A-FAF249827670
+      Provisioning UDID: 00008132-000C65EC26D3801C
+      Activation Lock Status: Enabled
+
+
+==============================================================================
+DISK AND MOUNTED-VOLUME OVERVIEW
+==============================================================================
+Filesystem        Size    Used   Avail Capacity iused ifree %iused  Mounted on
+/dev/disk3s3s1   228Gi    12Gi    31Gi    27%    480k  330M    0%   /
+devfs            205Ki   205Ki     0Bi   100%     710     0  100%   /dev
+/dev/disk3s6     228Gi   1.0Gi    31Gi     4%       1  330M    0%   /System/Volumes/VM
+/dev/disk3s4     228Gi    12Gi    31Gi    27%    1.5k  330M    0%   /System/Volumes/Preboot
+/dev/disk3s2     228Gi    79Mi    31Gi     1%     113  330M    0%   /System/Volumes/Update
+/dev/disk1s2     500Mi   6.0Mi   479Mi     2%       1  4.9M    0%   /System/Volumes/xarts
+/dev/disk1s1     500Mi   6.0Mi   479Mi     2%      32  4.9M    0%   /System/Volumes/iSCPreboot
+/dev/disk1s3     500Mi   3.8Mi   479Mi     1%     108  4.9M    0%   /System/Volumes/Hardware
+/dev/disk3s1     228Gi   171Gi    31Gi    85%    2.6M  330M    1%   /System/Volumes/Data
+map auto_home      0Bi     0Bi     0Bi   100%       0     0     -   /System/Volumes/Data/home
+/dev/disk3s5     228Gi   1.4Gi    31Gi     5%      58  330M    0%   /Volumes/Recovery
+
+diskutil list:
+/dev/disk0 (internal, physical):
+   #:                       TYPE NAME                    SIZE       IDENTIFIER
+   0:      GUID_partition_scheme                        *251.0 GB   disk0
+   1:             Apple_APFS_ISC Container disk1         524.3 MB   disk0s1
+   2:                 Apple_APFS Container disk3         245.1 GB   disk0s2
+   3:        Apple_APFS_Recovery Container disk2         5.4 GB     disk0s3
+
+/dev/disk3 (synthesized):
+   #:                       TYPE NAME                    SIZE       IDENTIFIER
+   0:      APFS Container Scheme -                      +245.1 GB   disk3
+                                 Physical Store disk0s2
+   1:                APFS Volume Macintosh HD - Data     183.7 GB   disk3s1
+   2:                APFS Volume Macintosh HD            12.4 GB    disk3s3
+   3:              APFS Snapshot com.apple.os.update-... 12.4 GB    disk3s3s1
+   4:                APFS Volume Preboot                 12.4 GB    disk3s4
+   5:                APFS Volume Recovery                1.5 GB     disk3s5
+   6:                APFS Volume VM                      1.1 GB     disk3s6
+
+
+Available capacity on home volume:
+Filesystem      Size    Used   Avail Capacity iused ifree %iused  Mounted on
+/dev/disk3s1   228Gi   171Gi    31Gi    85%    2.6M  330M    1%   /System/Volumes/Data
+
+==============================================================================
+REQUIRED PATH EXISTENCE
+==============================================================================
+EXISTS  /Users/eduardofgiovannini/Desktop
+EXISTS  /Users/eduardofgiovannini/Documents
+EXISTS  /Users/eduardofgiovannini/Downloads
+EXISTS  /Users/eduardofgiovannini/Pictures
+EXISTS  /Users/eduardofgiovannini/Movies
+EXISTS  /Users/eduardofgiovannini/Music
+EXISTS  /Users/eduardofgiovannini/Library/CloudStorage
+EXISTS  /Users/eduardofgiovannini/Library/Mobile Documents
+EXISTS  /Volumes
+
+==============================================================================
+IMMEDIATE NAMES: /Users/eduardofgiovannini/Documents
+==============================================================================
+.DS_Store
+.cursor
+.localized
+.openclaw
+.openclaw 2
+AI
+Browser_Alias copy
+CRLV-e_1203201061089BF0933.pdf.pdf
+Claude_Insights
+Codex
+Coding_Alias
+Cursor_Workspaces
+Desktop_Archive
+END_SESSION_PROMPT
+END_SESSION_PROMPT.pdf
+FACTORY_PROJECTS
+GitHub
+Interactive_Brokers
+ItaliaOS-private
+extrato-JulhoAgostoSetembroOutubroNovembroDezembroJaneiroFevereiroMarçoAbrilMaioJunho25-26.csv
+financas-2026
+organize-downloads.py
+prompts.md
+
+==============================================================================
+IMMEDIATE NAMES: /Users/eduardofgiovannini/Library/CloudStorage
+==============================================================================
+.DS_Store
+GoogleDrive-cadastros.online1979@gmail.com
+
+==============================================================================
+IMMEDIATE NAMES: /Volumes
+==============================================================================
+.timemachine
+Macintosh HD
+Recovery
+com.apple.TimeMachine.localsnapshots
+
+==============================================================================
+COMPLETION
+==============================================================================
+Baseline collection complete. No existing user file was modified by this script.

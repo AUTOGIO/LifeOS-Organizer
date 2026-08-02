@@ -1,0 +1,56 @@
+LifeOS Organizer — Task 02.5 Inventory Process Diagnostics
+Snapshot: 2026-08-02 America/Fortaleza
+Scope: read-only process diagnostics; no processes were changed.
+
+SUMMARY
+There are nine concurrent Task 03 scan pipelines, plus their wrapper shells.
+They are all legacy pre-repair runs using `find ... -print0`; none is the
+validated Task 03A staged-publish run. Their parent scripts consume CPU while
+their find children have 0.0% CPU, indicating concurrent pipeline contention
+and no evidence of successful completion.
+
+RUNNING PROCESS SNAPSHOT
+PID    PPID   Age       State  CPU%  Mem%  Open  CWD
+30006  27293  07:28:46  Ss     0.0   0.0   8     repository root
+30007  30006  07:28:46  S      6.0   0.1   9     repository root
+30013  30007  07:28:47  S      0.0   0.0   9     Documents/GitHub/claude-skills-os/.../lucide-react/dist/esm/icons
+31259  27293  07:28:10  Ss     0.0   0.0   8     repository root
+31262  31259  07:28:10  S      6.7   0.1   10    repository root
+31269  31262  07:28:10  S      0.0   0.0   9     Documents/GitHub/claude-skills-os/.../lucide-react/dist/esm/icons
+33545  27293  07:27:24  Ss     2.2   0.1   10    repository root
+33553  33545  07:27:24  S      0.0   0.0   9     Documents/GitHub/claude-skills-os/.../lucide-react/dist/esm/icons
+36608  27293  07:26:47  Ss     0.0   0.0   8     repository root
+36610  36608  07:26:47  S      4.2   0.1   10    repository root
+36619  36610  07:26:47  S      0.0   0.0   9     Documents/GitHub/claude-skills-os/.../lucide-react/dist/esm/icons
+39729  27293  07:26:12  Ss     0.0   0.0   8     repository root
+39734  39729  07:26:12  S      1.3   0.1   10    repository root
+39747  39734  07:26:12  S      0.0   0.0   9     Documents/GitHub/claude-skills-os/.../lucide-react/dist/esm/icons
+44007  27293  07:25:15  Ss     0.0   0.0   8     repository root
+44012  44007  07:25:15  S      3.0   0.1   10    repository root
+44026  44012  07:25:15  S      0.0   0.0   9     Documents/GitHub/claude-skills-os/.../lucide-react/dist/esm/icons
+47002  27293  07:24:35  Ss     0.0   0.0   8     repository root
+47008  47002  07:24:35  S      2.8   0.1   10    repository root
+47019  47008  07:24:35  S      0.0   0.0   9     Documents/GitHub/claude-skills-os/.../lucide-react/dist/esm/icons
+50476  27293  07:23:49  Rs     3.0   0.1   10    repository root
+50489  50476  07:23:49  S      0.0   0.0   9     Documents/GitHub/claude-skills-os/.../lucide-react/dist/esm/icons
+53965  27293  07:23:03  Ss     0.0   0.0   8     repository root
+53970  53965  07:23:03  S      7.0   0.1   10    repository root
+53978  53970  07:23:03  S      0.0   0.0   9     Documents/GitHub/ipad-stream-deck-console/.../icons
+
+COMMAND LINES
+- Wrapper PIDs (30006, 31259, 36608, 39729, 44007, 47002, 53965): /bin/zsh -c invoking Task 03, followed by report display/check commands.
+- Scan PIDs (30007, 31262, 33545, 36610, 39734, 44012, 47008, 50476, 53970): /bin/zsh ./scripts/03_documents_inventory.zsh; 31262 and 33545 used -x tracing.
+- Find PIDs (30013, 31269, 33553, 36619, 39747, 44026, 47019, 50489, 53978): /usr/bin/find /Users/eduardofgiovannini/Documents -xdev ... -print0.
+
+CLASSIFICATION
+- Wrapper shells: waiting for child scan completion.
+- Scan shells: active CPU consumers, but clearly stale because they have run for over seven hours and their legacy find children have not completed.
+- Find children: sleeping/blocked in the pipeline (0.0% CPU); not zombies or defunct.
+- Newest scan: PID 53970 (with child PID 53978), started after the other legacy scans, but it is also stale.
+- No process demonstrates useful completion progress: all output artifacts remain from the prior run and no scan has reached report publication.
+
+CAUSE ANALYSIS
+Multiple inventory processes exist because repeated execution attempts started new Task 03 shells before earlier terminal-backed executions had ended. Each duplicate recursively traverses the same Documents tree. The concurrent `find -print0` pipelines contend for filesystem traversal and pipe/output handling. This is the direct cause of the prolonged, non-completing state.
+
+SMALLEST SAFE RECOVERY RECOMMENDATION
+Gracefully terminate all stale Task 03 inventory process trees, then verify no Task 03 processes remain. Do not restart any inventory in the same action. After that separate, explicitly approved remediation, run only one validated Task 03A process from a persistent terminal session.
