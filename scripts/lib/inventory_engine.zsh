@@ -166,14 +166,30 @@ print_top_extensions() {
   print
 }
 
-# run_inventory_task <TASK_NUM> <TARGET_NAME>
+# run_inventory_task <TASK_NUM> <TARGET_NAME> [SAFE_MODE]
 # TASK_NUM: zero-padded task number as it appears in filenames, e.g. "03".
 # TARGET_NAME: must match a key in config/inventory_targets.yaml exactly,
 # e.g. "Documents". Lowercased automatically for filenames/paths.
+# SAFE_MODE: "1" or "0" (default "0"). Added for CloudStorage (DECISIONS.md
+# D8) without changing behavior for existing targets. "0" reproduces the
+# exact D7-validated behavior byte-for-byte — every existing wrapper (03-08)
+# calls this with two args, so SAFE_MODE defaults to "0" and nothing about
+# their output changes. When "1":
+#   - Spotlight enrichment (mdls) is forced off regardless of the
+#     COLLECT_SPOTLIGHT env override — mdls behavior against not-yet-
+#     materialized cloud placeholder files is not independently verified as
+#     non-triggering, so this is precautionary.
+#   - An extra path-only `find` pass (no stat) runs before the scan to count
+#     entries as listed, so an item that vanishes between listing and stat
+#     (evicted cloud placeholder, deleted mid-scan) is recorded as such
+#     instead of silently missing from output with no explanation.
 run_inventory_task() {
   local TASK_NUM="$1"
   local TARGET_NAME="$2"
   local target_lower="${TARGET_NAME:l}"
+  local SAFE_MODE="${3:-0}"
+  local effective_collect_spotlight="$COLLECT_SPOTLIGHT"
+  [[ "$SAFE_MODE" == '1' ]] && effective_collect_spotlight='0'
 
   local OUTPUT_DIR="$PROJECT_DIR/inventory/$TARGET_NAME"
   local FINAL_REPORT_PATH="$PROJECT_DIR/reports/${TASK_NUM}_${target_lower}_inventory.txt"
@@ -251,6 +267,13 @@ run_inventory_task() {
   typeset -g -A extension_counts file_sizes directory_sizes
   extension_counts=() file_sizes=() directory_sizes=()
 
+  # Safe-mode only (see run_inventory_task header comment). Same prune
+  # expression as the scan below, path-only, so the count is comparable.
+  local -i expected_entry_count=0
+  if [[ "$SAFE_MODE" == '1' ]]; then
+    expected_entry_count="$(/usr/bin/find "$TARGET_PATH" -xdev \( -type d \( -name '*.app' -o -name '*.bundle' -o -name '*.framework' -o -name '*.kext' -o -name '*.pages' -o -name '*.numbers' -o -name '*.key' -o -name '*.photo library' -o -name '*.sparsebundle' \) -prune -o -print \) 2>/dev/null | /usr/bin/wc -l | /usr/bin/tr -d ' ')"
+  fi
+
   print -- 'InventoryID,FullPath,RelativePath,Name,Extension,IsDirectory,IsPackage,IsHidden,IsSymlink,Owner,Group,Permissions,SizeBytes,CreationDate,ModificationDate,AccessDate,SpotlightContentType,SpotlightKind' > "$CSV_PATH"
   print -- '[' > "$JSON_PATH"
   exec 3>> "$CSV_PATH"
@@ -292,7 +315,7 @@ run_inventory_task() {
 
     spotlight_type=''
     spotlight_kind=''
-    if [[ "$COLLECT_SPOTLIGHT" == '1' && -x /usr/bin/mdls ]]; then
+    if [[ "$effective_collect_spotlight" == '1' && -x /usr/bin/mdls ]]; then
       # Retrieve both optional Spotlight fields in one metadata-only query.
       spotlight_values="$(/usr/bin/mdls -raw -name kMDItemContentType -name kMDItemKind -- "$item" 2>/dev/null || true)"
       spotlight_lines=("${(@f)spotlight_values}")
@@ -335,6 +358,12 @@ run_inventory_task() {
   local END_EPOCH=$(/bin/date +%s)
   local RUNTIME=$(( END_EPOCH - START_EPOCH ))
 
+  local -i vanished_count=0
+  if [[ "$SAFE_MODE" == '1' ]]; then
+    vanished_count=$(( expected_entry_count - (total_files + total_directories) ))
+    (( vanished_count < 0 )) && vanished_count=0
+  fi
+
   {
     print -- '# LifeOS Organizer Inventory Report'
     print
@@ -376,6 +405,16 @@ run_inventory_task() {
     section 'Observations'
     print -- '- This is metadata-only inventory; no document content was opened, parsed, summarized, or OCR-processed.'
     print
+    if [[ "$SAFE_MODE" == '1' ]]; then
+      section 'Availability (safe mode)'
+      print -- '- Spotlight enrichment forced off for this run regardless of COLLECT_SPOTLIGHT, as a precaution against unverified mdls behavior on cloud placeholder files.'
+      if (( vanished_count == 0 )); then
+        print -- '- All entries listed at scan start were resolvable at stat time.'
+      else
+        print -- "- $vanished_count entries were listed at scan start but not resolvable at stat time (likely removed, evicted, or made offline-only mid-scan)."
+      fi
+      print
+    fi
     print -- '---'
     print -- "Footer: Inventory $INVENTORY_ID is read-only and does not authorize file changes."
   } > "$SUMMARY_PATH"
@@ -394,6 +433,10 @@ run_inventory_task() {
     print -- "Total size: $total_size bytes"
     print -- "Warnings: $warnings"
     print -- "Errors: $errors"
+    if [[ "$SAFE_MODE" == '1' ]]; then
+      print -- "Safe mode: enabled (Spotlight forced off, vanish-tracking active)"
+      print -- "Vanished mid-scan: $vanished_count"
+    fi
     print -- 'Safety result: no user files were modified, moved, renamed, deleted, copied, or opened for content inspection.'
   } > "$STAGED_REPORT_PATH"
 

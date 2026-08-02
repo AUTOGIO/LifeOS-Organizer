@@ -4,6 +4,24 @@ Architecture decision log. Newest first. Each entry: context, decision, conseque
 
 ---
 
+## D8 — CloudStorage approved with a safe-mode flag on `run_inventory_task`; Volumes explicitly out of scope (2026-08-02)
+
+**Context.** `docs/SAFETY_RULES.md` rule 9 requires separate approval before scanning CloudStorage or Volumes. Operator approved scoped engine changes and a full metadata-only inventory of both, with requirements: no cloud downloads triggered, no files modified, unmounted/unavailable volumes handled cleanly, each report validated before proceeding. Before writing code, the proposed safeguards were presented for review, including one real design fork: the engine's `find` uses `-xdev` (correct for local targets), which for a target of literally `/Volumes` would list mount-point stubs but not descend into any individually-mounted volume — a silent, misleadingly "clean" near-empty scan. Two resolutions were offered (per-volume inventory with individual approval, or a shallow mount-listing only). Operator's decision: **skip Volumes entirely** — "NO NEED to work in VOLUMES." Scope narrowed to CloudStorage only.
+
+**Decision.** Added an optional third parameter to `run_inventory_task`, `SAFE_MODE` (default `"0"`), rather than forking the engine or writing CloudStorage-specific logic outside it:
+- `SAFE_MODE=0` (all of scripts 03-08, unchanged): byte-for-byte identical behavior and report output to the D7-verified baseline. No regression risk — nothing about the six already-validated targets changes.
+- `SAFE_MODE=1` (new `scripts/09_cloudstorage_inventory.zsh` only): Spotlight enrichment (`mdls`) forced off regardless of the `COLLECT_SPOTLIGHT` env override — precautionary, since `mdls` behavior against not-yet-materialized cloud placeholder files isn't independently verified as non-triggering. Also runs one extra path-only `find` pass before the scan to count entries as listed, then compares that to what was actually resolved at `stat` time; any gap is reported as a "vanished mid-scan" count in the report's new Availability section, instead of silently vanishing from output the way a mid-batch `stat` failure did before.
+
+**Why this design and not a schema change.** No new CSV/JSON column (e.g. a per-file "materialized/offline" flag) was added. The engine's scan primitives (`find` for traversal, `stat` for metadata) never open file content regardless of target — that's what already makes them safe against triggering iCloud/Dropbox downloads, and it required no change. A per-file download-status column was considered and rejected as scope beyond what was asked: none of the four stated requirements (no downloads, no mutation, clean unavailable-handling, per-report validation) call for it, and touching the shared field list would mean re-validating all 6 existing targets' schema again for no operational gain.
+
+**Consequences.** One shared file (`inventory_engine.zsh`) still covers every target; CloudStorage's differences are fully contained in one flag most reviewers won't need to know about when reading the six unchanged wrappers. Volumes remains configured in `config/inventory_targets.yaml` but is not scheduled — `RISK_REGISTER.md` R7 updated to reflect CloudStorage as in-progress and Volumes as explicitly deferred by operator choice, not by omission.
+
+**Verification performed before handoff.** `bash -n` against the modified library and the new wrapper — same pre-existing zsh-only `<->` false positive as D7 (`RISK_REGISTER.md` R6), no new syntax errors from this change. Not yet executed under zsh — pending operator run, same as every prior script change in this project.
+
+**Status.** Fully verified (2026-08-02). Operator ran `./scripts/09_cloudstorage_inventory.zsh`: `INV-20260802-144307`, 22,833 files, 1,779 directories, 86,341,869,509 bytes. Independently confirmed: 24,612 CSV/JSON records matching under the single Inventory ID, Availability section reports "All entries listed at scan start were resolvable at stat time" (0 vanished mid-scan), no leftover `logs/.task09.lock` or `inventory/CloudStorage/.task09.*` staging artifacts. Safe mode worked exactly as designed on first run — no bug this time.
+
+---
+
 ## D7 — Clone per target instead of parameterizing; refactor point deferred again (2026-08-02)
 
 **Context.** With Task 03 (Documents) validated end-to-end, the next step was scanning additional targets (Desktop, Downloads, Pictures, Movies, Music). Two options: write one parameterized script that takes a target name/path, or clone the validated Task 03 script per target with minimal, mechanical changes.

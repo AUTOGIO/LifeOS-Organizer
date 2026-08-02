@@ -1,0 +1,16 @@
+LifeOS Organizer — CloudStorage Metadata Inventory
+Inventory ID: INV-20260802-144307
+Timestamp: 2026-08-02T14:43:07-0300
+Target: /Users/eduardofgiovannini/Library/CloudStorage
+Runtime: 23 seconds
+
+Collected: filesystem path, name, extension, type flags, ownership, permissions, size, timestamps, and optional Spotlight type/kind fields.
+Intentionally not collected: document contents, OCR output, document summaries, previews, hashes, duplicate analysis, or semantic classifications.
+Files: 22833
+Directories: 1779
+Total size: 86341869509 bytes
+Warnings: 1
+Errors: 0
+Safe mode: enabled (Spotlight forced off, vanish-tracking active)
+Vanished mid-scan: 0
+Safety result: no user files were modified, moved, renamed, deleted, copied, or opened for content inspection.

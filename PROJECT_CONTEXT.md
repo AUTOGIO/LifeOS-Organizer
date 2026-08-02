@@ -26,6 +26,8 @@ Infrastructure & Inventory. The reusable inventory framework (Task 02) is valida
 
 Scripts 03-08 were refactored from six hand-cloned files into thin wrappers over a shared `scripts/lib/inventory_engine.zsh` (`DECISIONS.md` D7). Fully verified: all 6 targets rerun clean, one cleanup-trap scoping bug found and fixed along the way, no leftover artifacts anywhere on the final pass.
 
+CloudStorage (Task 09) is done and validated: a `SAFE_MODE` flag on `run_inventory_task` forced Spotlight off and tracked vanish-mid-scan entries, with zero behavior change to the six existing targets (`DECISIONS.md` D8). Inventory ID `INV-20260802-144307`: 22,833 files, 1,779 directories, 86,341,869,509 bytes, 0 errors, 24,612 CSV/JSON records confirmed matching, 0 vanished mid-scan. Volumes was explicitly declined by the operator and is not scheduled. Seven of 8 configured targets are now complete.
+
 ## Work completed
 
 - Task 01 — Environment Baseline — done
@@ -37,6 +39,7 @@ Scripts 03-08 were refactored from six hand-cloned files into thin wrappers over
 - Task 06 — Pictures Inventory — done and validated under the D7 library refactor. Inventory ID `INV-20260802-141844`: 8,656 files, 326 directories, 523,227,442 bytes, 0 errors. `metadata.csv`/`metadata.json` independently confirmed at 8,982 matching records under one consistent Inventory ID.
 - Task 07 — Movies Inventory — done and validated under the D7 library refactor. Inventory ID `INV-20260802-141928`: 49 files, 5 directories, 11,827 bytes, 0 errors. `metadata.csv`/`metadata.json` independently confirmed at 54 matching records under one consistent Inventory ID.
 - Task 08 — Music Inventory — done and validated under the D7 library refactor. Inventory ID `INV-20260802-142008`: 161 files, 23 directories, 132,758,072 bytes, 0 errors. `metadata.csv`/`metadata.json` independently confirmed at 184 matching records under one consistent Inventory ID.
+- Task 09 — CloudStorage Inventory — done and validated under safe mode (`DECISIONS.md` D8). Inventory ID `INV-20260802-144307`: 22,833 files, 1,779 directories, 86,341,869,509 bytes, 0 errors. `metadata.csv`/`metadata.json` independently confirmed at 24,612 matching records under one consistent Inventory ID. 0 entries vanished mid-scan.
 
 ## What this project intentionally does not do yet
 

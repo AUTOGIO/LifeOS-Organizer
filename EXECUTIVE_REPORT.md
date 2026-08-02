@@ -4,7 +4,7 @@ Status as of: 2026-08-02
 
 ## Summary
 
-The inventory framework is built and validated. Six of 8 configured targets — Documents, Desktop, Downloads, Pictures, Movies, Music — have clean, validated metadata scans on disk, all run through a single shared engine (`scripts/lib/inventory_engine.zsh`, `DECISIONS.md` D7) after that engine was itself fully re-verified against every target. Two remain, both pending separate approval: CloudStorage, Volumes.
+The inventory framework is built and validated. Seven of 8 configured targets — Documents, Desktop, Downloads, Pictures, Movies, Music, CloudStorage — have clean, validated metadata scans on disk, all run through a single shared engine (`scripts/lib/inventory_engine.zsh`, `DECISIONS.md` D7/D8). Volumes was explicitly declined by the operator and is not scheduled.
 
 ## Work completed
 
@@ -19,6 +19,7 @@ The inventory framework is built and validated. Six of 8 configured targets — 
 | 06 — Pictures Inventory | **Done and validated** under the D7 shared engine. Inventory ID `INV-20260802-141844`: 8,656 files, 326 directories, 523,227,442 bytes, 0 errors. 8,982 CSV/JSON records confirmed matching. |
 | 07 — Movies Inventory | **Done and validated** under the D7 shared engine. Inventory ID `INV-20260802-141928`: 49 files, 5 directories, 11,827 bytes, 0 errors. 54 CSV/JSON records confirmed matching. |
 | 08 — Music Inventory | **Done and validated** under the D7 shared engine. Inventory ID `INV-20260802-142008`: 161 files, 23 directories, 132,758,072 bytes, 0 errors. 184 CSV/JSON records confirmed matching. |
+| 09 — CloudStorage Inventory | **Done and validated** under safe mode (D8). Inventory ID `INV-20260802-144307`: 22,833 files, 1,779 directories, 86,341,869,509 bytes, 0 errors. 24,612 CSV/JSON records confirmed matching. 0 entries vanished mid-scan. |
 
 ## Key findings
 
@@ -41,12 +42,12 @@ Once all 5 non-Documents targets were individually cloned and validated with zer
 
 ## Outstanding action
 
-None. Task 03's original incident closed 2026-08-02 01:36. The D7 refactor closed 2026-08-02 14:20, fully verified across all 6 targets.
+None. Task 03's original incident closed 2026-08-02 01:36. The D7 refactor closed 2026-08-02 14:20, fully verified across all 6 targets. CloudStorage (D8) closed 2026-08-02 14:43, verified clean on first run.
 
 ## Risk posture
 
-No user file has been modified, moved, renamed, deleted, or opened for content inspection at any point in this project. Both incidents this project has had (the original concurrency corruption, and the D7 cleanup-trap bug) were confined to the project's own output/lock artifacts, caught before causing harm, and are now independently verified fixed. Full detail: `RISK_REGISTER.md`.
+No user file has been modified, moved, renamed, deleted, or opened for content inspection at any point in this project. Both incidents this project has had (the original concurrency corruption, and the D7 cleanup-trap bug) were confined to the project's own output/lock artifacts, caught before causing harm, and are now independently verified fixed. CloudStorage's first run had no incident. Full detail: `RISK_REGISTER.md`.
 
 ## Next phase
 
-All 6 local/primary targets are complete. Two remain, both pending separate approval: CloudStorage, Volumes — see `docs/SAFETY_RULES.md` rule 9. After that, the metadata-before-AI classification phase per the project charter.
+Seven of 8 configured targets are complete. Volumes was explicitly declined by the operator and is not scheduled. Next up: the metadata-before-AI classification phase per the project charter (`ROADMAP.md`, "Later") — not yet scoped.

@@ -2,6 +2,14 @@
 
 No version tags — this project has no releases yet, only dated task entries. Newest first.
 
+## 2026-08-02 (continued)
+
+- **Decided:** operator approved scoped engine changes and a full metadata-only inventory of CloudStorage; explicitly declined Volumes ("NO NEED to work in VOLUMES"). See `DECISIONS.md` D8.
+- **Added:** `SAFE_MODE` parameter to `run_inventory_task` (`scripts/lib/inventory_engine.zsh`), default off — zero behavior change to scripts 03-08. When enabled: forces Spotlight enrichment off regardless of `COLLECT_SPOTLIGHT`, and adds a pre-scan entry count so anything that vanishes mid-scan is reported instead of silently dropped.
+- **Added:** `scripts/09_cloudstorage_inventory.zsh` — Task 09, CloudStorage target, safe mode enabled.
+- **Task 09 — CloudStorage Inventory. Done and validated on first run**, no incident. Inventory ID `INV-20260802-144307`: 22,833 files, 1,779 directories, 86,341,869,509 bytes, 0 errors. `metadata.csv`/`metadata.json` independently confirmed at 24,612 matching records under one consistent Inventory ID. Availability section: 0 entries vanished mid-scan. No leftover lock or staging artifacts.
+- **Updated:** `RISK_REGISTER.md` R7 closed for CloudStorage; Volumes remains deferred by operator choice.
+
 ## 2026-08-02
 
 - **Fixed:** `scripts/03_documents_inventory.zsh` had no execution lock, allowing concurrent invocations to race on shared output paths. Added an `mkdir`-based lock (`logs/.task03.lock`) with stale-PID reclaim. See `DECISIONS.md` D5.

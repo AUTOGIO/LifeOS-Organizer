@@ -4,11 +4,11 @@ Format: Now / Next / Later. Nothing moves left until the item to its left is clo
 
 ## Now
 
-- Decide on CloudStorage and Volumes: both need separate explicit approval (`docs/SAFETY_RULES.md` rule 9) before any scan, and likely need engine changes (on-demand download risk for CloudStorage, unmount risk for Volumes) rather than a plain new wrapper over `run_inventory_task` as-is.
+- All approved local and CloudStorage targets are complete and verified (7 of 8 configured; Volumes explicitly declined by operator, 2026-08-02, not scheduled). No inventory work queued. Next substantive phase is the metadata-before-AI classification work below — not started, needs scoping.
 
 ## Next
 
-- (nothing queued beyond the CloudStorage/Volumes decision above — this is intentionally the current stopping point until that approval is given)
+- (nothing queued beyond scoping the classification phase — see Later)
 
 ## Later
 

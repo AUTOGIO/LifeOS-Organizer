@@ -78,10 +78,10 @@ Format: risk, evidence, impact, status, mitigation.
 
 ## R7 — External/cloud targets untested
 
-**Evidence.** `config/inventory_targets.yaml` includes CloudStorage and Volumes as configured targets; neither has been scanned. `docs/SAFETY_RULES.md` rule 9 requires separate approval for both.
+**Evidence.** `config/inventory_targets.yaml` includes CloudStorage and Volumes as configured targets. `docs/SAFETY_RULES.md` rule 9 requires separate approval for both.
 
-**Impact.** Low currently (nothing has run against them). Becomes relevant the moment either target's first scan is approved — cloud-backed paths can trigger on-demand downloads just by being `stat`'d, and external volumes may not stay mounted for a multi-hour scan.
+**Impact.** Low currently for CloudStorage (approved, engine change written, not yet run — see below). Zero for Volumes: operator explicitly declined to scan it ("NO NEED to work in VOLUMES," 2026-08-02), so the `-xdev`/mount-crossing design risk flagged during the CloudStorage safeguards proposal is moot unless this decision is revisited.
 
-**Status.** Open, deferred by design.
+**Status.** CloudStorage: closed 2026-08-02. `INV-20260802-144307`, 22,833 files, 1,779 directories, 24,612 CSV/JSON records independently confirmed matching, 0 entries vanished mid-scan, no leftover lock/staging artifacts. Volumes: deferred indefinitely by explicit operator choice, not scheduled, no engine work done or planned for it.
 
-**Mitigation.** Do not schedule either target's first scan without explicit operator approval and a plan for handling an unmount or on-demand-download mid-scan.
+**Mitigation.** CloudStorage — `run_inventory_task`'s `SAFE_MODE=1` path forced Spotlight off and tracked vanished entries as designed; confirmed clean on first run, no bug found (contrast with D7's first-run cleanup-trap bug). Volumes — no action needed unless the operator asks to revisit it; if so, resolve the `-xdev` mount-crossing question (per-volume scans vs. shallow listing) before any engine work.

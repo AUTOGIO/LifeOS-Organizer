@@ -109,6 +109,32 @@ ls logs/.task03.lock inventory/Documents/.task03.* 2>&1
 ```
 Both should report "No such file or directory" once the run finishes cleanly.
 
+## Running the CloudStorage inventory (Task 09, safe mode)
+
+Approved 2026-08-02 (`docs/SAFETY_RULES.md` rule 9; Volumes explicitly deferred, out of scope — operator choice). Runs `run_inventory_task` in safe mode (`DECISIONS.md` D8): Spotlight enrichment forced off, and an extra pre-scan `find` pass counts entries so anything that vanishes between listing and `stat` (evicted cloud placeholder, deleted mid-scan) is reported, not silently dropped.
+
+```
+./scripts/09_cloudstorage_inventory.zsh
+```
+
+Same lock/staging/validation behavior as every other target — a broken run leaves the prior good artifact untouched. Check the new report's Availability section (`reports/09_cloudstorage_inventory.txt` / `inventory/CloudStorage/summary.md`) for the vanished-entry count; `0` is the expected outcome for a normal run.
+
+Validate the published artifact the same way as any other target, pointing at `inventory/CloudStorage/`:
+
+```
+python3 -c "
+import json, csv
+with open('inventory/CloudStorage/metadata.json') as f:
+    records = json.load(f)
+with open('inventory/CloudStorage/metadata.csv', newline='') as f:
+    rows = list(csv.DictReader(f))
+print('json records:', len(records))
+print('csv rows:', len(rows))
+print('row count match:', len(records) == len(rows))
+print('inventory id:', records[0]['InventoryID'] if records else 'N/A')
+"
+```
+
 ## Adding a new inventory target
 
 1. Confirm the target name and path already exist in `config/inventory_targets.yaml` and `inventory/<Target>/` exists (both are already true for all 8 configured targets).
