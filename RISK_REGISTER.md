@@ -85,3 +85,29 @@ Format: risk, evidence, impact, status, mitigation.
 **Status.** CloudStorage: closed 2026-08-02. `INV-20260802-144307`, 22,833 files, 1,779 directories, 24,612 CSV/JSON records independently confirmed matching, 0 entries vanished mid-scan, no leftover lock/staging artifacts. Volumes: deferred indefinitely by explicit operator choice, not scheduled, no engine work done or planned for it.
 
 **Mitigation.** CloudStorage — `run_inventory_task`'s `SAFE_MODE=1` path forced Spotlight off and tracked vanished entries as designed; confirmed clean on first run, no bug found (contrast with D7's first-run cleanup-trap bug). Volumes — no action needed unless the operator asks to revisit it; if so, resolve the `-xdev` mount-crossing question (per-volume scans vs. shallow listing) before any engine work.
+
+---
+
+## R8 — Duplicate-risk classification is a heuristic, not a proof
+
+**Evidence.** `CLASSIFICATION_DESIGN.md` §1: the size/duplicate-risk dimension can only compare `Name` and `SizeBytes` columns already in the inventory schema. No content hash is collected today.
+
+**Impact.** Medium if this limitation is forgotten downstream. A `(Name, SizeBytes)` match is consistent with — but does not prove — byte-identical content; two different files can coincidentally share a name and size. Conversely, true duplicates with different names would never surface under this dimension at all.
+
+**Status.** Open by design, not a defect. Documented explicitly in the classification design so no future phase treats a "duplicate-risk candidate" label as a confirmed duplicate.
+
+**Mitigation.** All duplicate-risk output is capped at Medium confidence at best and routed to human review — see `CLASSIFICATION_DESIGN.md` §2. A content-hash column, if ever wanted, would be a separate, separately-approved inventory-schema change (new scan pass, new engine version), not a classification-phase change. Exception: a build-cache/regeneratable-artifact label (path pattern + exact size match) can reach High — that is a structural claim about the *path*, not a duplicate-content claim about two files, so it isn't subject to this cap (`DECISIONS.md` D10).
+
+---
+
+## R9 — Sandbox mount's `unlink()` restriction is general, not git-specific
+
+**Evidence.** `RISK_REGISTER.md`'s original git lock-file incident (see R3's mitigation history) was treated as a git-only quirk. Building and verifying the Task 10 classification pipeline (`DECISIONS.md` D10) reproduced the identical failure on ordinary files: an `mkdir` lock directory and a `mktemp -d` staging directory created inside the mounted repo from the sandbox could not be removed by `rm -rf` (`Operation not permitted`), leaving `classification/Downloads/.task10.46B7b6` and `logs/.task10.lock` behind.
+
+**Impact.** Medium. Any future AI-run verification that creates lock/staging artifacts inside the synced repository — not just git operations — risks leaving stray directories that block the real script's own lock logic on the operator's Mac (the same symptom as the original git incident, different subsystem).
+
+**Status.** Mitigated by rule change, 2026-08-02. Two stray directories from the Task 10 verification pass need manual removal (see `DECISIONS.md` D10 for the exact command) before the operator's first official run of `scripts/10_downloads_classification.zsh`.
+
+**Mitigation.** Revised rule: the sandbox never creates lock or staging artifacts inside the synced repository, for any task. Verification of AI-authored pipeline logic runs against a scratch location outside the mounted repo (e.g. `/tmp` in the sandbox) instead of exercising the real lock/stage path.
+
+**Addendum (same day):** a plain `git status --short` — previously treated as unconditionally safe since it's read-only — also left a stray `.git/index.lock` once during this same verification session, undeletable from the sandbox for the same reason. Revised further: read-only git commands are still preferred over write commands from the sandbox, but are not guaranteed lock-free. The operator should always check for and clear stray `.git/*.lock` files before a commit, not just after a sandbox-run write command.

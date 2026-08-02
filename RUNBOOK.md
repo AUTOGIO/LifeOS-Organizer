@@ -135,6 +135,41 @@ print('inventory id:', records[0]['InventoryID'] if records else 'N/A')
 "
 ```
 
+## Running the Downloads classification dry run (Task 10)
+
+Approved 2026-08-02 (`DECISIONS.md` D9/D10). Read-only proposal only — reads `inventory/Downloads/metadata.csv`, never rescans the filesystem, performs no move/rename/tag/copy/delete of any file.
+
+**First, clear two stray artifacts left by sandbox verification** (see `DECISIONS.md` D10 — an AI-sandbox `unlink()` limitation, not a real concurrent-run conflict):
+
+```
+cd /Users/eduardofgiovannini/Documents/GitHub/LifeOS-Organizer
+rm -rf classification/Downloads/.task10.* logs/.task10.lock
+```
+
+Then run:
+
+```
+./scripts/10_downloads_classification.zsh
+```
+
+Output goes to `classification/Downloads/` (`classification_proposal.csv`, `classification_proposal.json`, `summary.md`) and `reports/10_downloads_classification.txt`. The pipeline's logic was already verified against this same real data from a sandbox scratch location: 161 records, 127 High / 0 Medium / 34 Low confidence, 0 warnings, 0 errors — this run is to confirm the zsh orchestration layer and produce the official, committable artifact. Compare your `Completed CLS-...` line's counts against those numbers; they should match exactly (only the `ClassificationID` and timestamp will differ).
+
+Validate the published artifact:
+
+```
+python3 -c "
+import json, csv
+with open('classification/Downloads/classification_proposal.json') as f:
+    records = json.load(f)
+with open('classification/Downloads/classification_proposal.csv', newline='') as f:
+    rows = list(csv.DictReader(f))
+print('json records:', len(records))
+print('csv rows:', len(rows))
+print('row count match:', len(records) == len(rows))
+print('classification id:', records[0]['ClassificationID'] if records else 'N/A')
+"
+```
+
 ## Adding a new inventory target
 
 1. Confirm the target name and path already exist in `config/inventory_targets.yaml` and `inventory/<Target>/` exists (both are already true for all 8 configured targets).

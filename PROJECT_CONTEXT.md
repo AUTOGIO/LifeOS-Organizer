@@ -22,7 +22,9 @@ Source: `reports/01_environment_baseline.txt`. No version control is in use — 
 
 ## Current phase
 
-Infrastructure & Inventory. The reusable inventory framework (Task 02) is validated and ready. Six of eight configured targets have completed, validated metadata scans: Documents (Task 03), Desktop (Task 04), Downloads (Task 05), Pictures (Task 06), Movies (Task 07), Music (Task 08). Two remain unscanned, both requiring separate approval: CloudStorage, Volumes.
+Inventory is closed for 7 of 8 configured targets: Documents (Task 03), Desktop (Task 04), Downloads (Task 05), Pictures (Task 06), Movies (Task 07), Music (Task 08), CloudStorage (Task 09). Volumes was explicitly declined by the operator and is not scheduled.
+
+The classification pipeline (`scripts/lib/classification_engine.zsh`, `scripts/10_downloads_classification.zsh`) is built for Downloads and logic-verified against real data (`DECISIONS.md` D9/D10): 161 records from Downloads' 53 files, 127 High / 0 Medium / 34 Low confidence, 0 warnings, 0 errors. Not yet run as the operator's own official artifact — two stray directories from sandbox verification need manual removal first (`RUNBOOK.md`).
 
 Scripts 03-08 were refactored from six hand-cloned files into thin wrappers over a shared `scripts/lib/inventory_engine.zsh` (`DECISIONS.md` D7). Fully verified: all 6 targets rerun clean, one cleanup-trap scoping bug found and fixed along the way, no leftover artifacts anywhere on the final pass.
 
@@ -45,7 +47,7 @@ CloudStorage (Task 09) is done and validated: a `SAFE_MODE` flag on `run_invento
 
 - No document content is opened, parsed, OCR'd, hashed, or summarized.
 - No file has been moved, renamed, copied, or deleted by any script.
-- No AI classification has run against collected metadata.
+- No classification code has been written or run against collected metadata — `CLASSIFICATION_DESIGN.md` is a design and proposal document only, awaiting approval.
 - No remediation or reorganization proposal exists yet.
 
 ## Governing documents

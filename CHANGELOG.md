@@ -2,6 +2,21 @@
 
 No version tags — this project has no releases yet, only dated task entries. Newest first.
 
+## 2026-08-02 (classification pipeline — Downloads dry run)
+
+- **Decided:** operator finalized the three open policy questions from `CLASSIFICATION_DESIGN.md` §7 — target-specific staleness thresholds (Downloads 30/90/180d; Documents/Desktop 180/365/730d; Pictures/Movies/Music none), duplicate-risk stays within-target only, package directories excluded by default. See `DECISIONS.md` D10.
+- **Added:** `scripts/lib/classification_engine.zsh` and `scripts/10_downloads_classification.zsh` — read-only classification pipeline for Downloads, mirrors the inventory engine's lock/stage/generate/validate/publish pattern. Reads only `inventory/Downloads/metadata.csv`; never rescans the filesystem; performs no file mutation at any confidence tier.
+- **Fixed (before reaching the operator):** an argv-slicing off-by-one in the embedded Python generator (`sys.argv[1:11]` should have been `[1:12]`) was caught during sandbox verification, before any execution was shown or committed.
+- **Found:** the sandbox mount's `unlink()` restriction (previously thought git-specific) also blocks removal of ordinary lock/staging directories created inside the synced repo. Verification method changed to run against a `/tmp` scratch location instead. See `RISK_REGISTER.md` R9, `AI_COLLABORATION.md` rule 8. Two stray artifacts from this discovery (`classification/Downloads/.task10.*`, `logs/.task10.lock`) need manual removal before the first official run.
+- **Verified (logic only, via `/tmp` scratch run against real `inventory/Downloads/metadata.csv`):** 161 classification records from Downloads' 53 files — 127 High / 0 Medium / 34 Low confidence, 34 in the review queue, 0 warnings, 0 errors. Validation gate passed. Not yet run as the operator's own official, committed artifact.
+
+## 2026-08-02 (classification design)
+
+- **Decided:** operator directed the metadata-before-AI classification phase to begin, scoped to local targets only (CloudStorage and Volumes excluded), design-and-proposal only, no file mutation, four classification dimensions (project/workspace grouping, file type/extension, age/staleness, size/duplicate-risk), three-tier confidence policy (high auto-proposable, medium/low require human review, no tier triggers movement). See `DECISIONS.md` D9.
+- **Added:** `CLASSIFICATION_DESIGN.md` — category model, confidence thresholds, a metadata-only pipeline design (reads only already-published `inventory/<Target>/metadata.csv|json`, never re-scans the filesystem), example proposed outputs grounded in real inventory numbers (not fabricated), a safety/rollback plan for a possible future mutation phase, and a 5-step implementation plan.
+- **Added:** `RISK_REGISTER.md` R8 — duplicate-risk classification is a `(Name, SizeBytes)` heuristic, not a hash-verified proof; documented explicitly so it's never mistaken for confirmed-duplicate detection downstream.
+- **No classification code was written or run.** No user file or inventory artifact was modified — only existing, already-published `metadata.csv` files were read to produce the design's grounded examples.
+
 ## 2026-08-02 (continued)
 
 - **Decided:** operator approved scoped engine changes and a full metadata-only inventory of CloudStorage; explicitly declined Volumes ("NO NEED to work in VOLUMES"). See `DECISIONS.md` D8.
