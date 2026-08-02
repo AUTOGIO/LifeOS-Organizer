@@ -22,14 +22,15 @@ Source: `reports/01_environment_baseline.txt`. No version control is in use — 
 
 ## Current phase
 
-Infrastructure & Inventory. The reusable inventory framework (Task 02) is validated and ready. One target (Documents) has completed a metadata scan (Task 03). Seven configured targets remain unscanned: Desktop, Downloads, Pictures, Movies, Music, CloudStorage, Volumes.
+Infrastructure & Inventory. The reusable inventory framework (Task 02) is validated and ready. Two of eight configured targets have completed, validated metadata scans: Documents (Task 03) and Desktop (Task 04). Six remain unscanned: Downloads, Pictures, Movies, Music, CloudStorage, Volumes.
 
 ## Work completed
 
 - Task 01 — Environment Baseline — done
 - Task 02 — Inventory Engine (framework readiness) — done, 0 failures / 0 warnings
 - Task 02.5 — Process Diagnostics — done, identified 9 stale concurrent Task 03 process trees as the cause of artifact corruption
-- Task 03 — Documents Inventory — metadata collected (128,173 files, 17,730 directories, 161,584,842,619 bytes); publish artifacts were corrupted by the concurrency issue found in Task 02.5. Fix applied 2026-08-02 (execution lock + collision-proof Inventory ID); a clean rerun is pending on the user's Mac.
+- Task 03 — Documents Inventory — done and validated. Inventory ID `INV-20260802-013608`: 128,305 files, 17,786 directories, 161,275,096,221 bytes, 0 errors. `metadata.csv`/`metadata.json` independently confirmed at 146,091 matching records under one consistent Inventory ID.
+- Task 04 — Desktop Inventory — done and validated, clean on first run. Inventory ID `INV-20260802-132721`: 99 files, 21 directories, 99,051,425 bytes, 0 errors. `metadata.csv`/`metadata.json` independently confirmed at 120 matching records under one consistent Inventory ID.
 
 ## What this project intentionally does not do yet
 

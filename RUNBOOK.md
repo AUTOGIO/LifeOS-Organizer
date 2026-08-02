@@ -14,16 +14,17 @@ Every script enforces this — they exit immediately if `pwd` doesn't match.
 ./scripts/01_environment_baseline.zsh   # read-only env/safety baseline → reports/01_environment_baseline.txt
 ./scripts/02_inventory_engine.zsh       # framework readiness check → reports/02_inventory_engine.txt
 ./scripts/03_documents_inventory.zsh    # Documents metadata inventory → inventory/Documents/*, reports/03_documents_inventory.txt
+./scripts/04_desktop_inventory.zsh      # Desktop metadata inventory → inventory/Desktop/*, reports/04_desktop_inventory.txt
 ```
 
 Run `02_inventory_engine.zsh` before any new target's first inventory run — it fails fast on missing config, missing staging directories, or a target path that no longer exists.
 
-`03_documents_inventory.zsh` takes minutes to over an hour on a full Documents tree (prior runs: 586s–3915s). Run it in a terminal session you intend to keep open; do not background it and forget about it — that is exactly how the 2026-08-01 incident happened (see `RISK_REGISTER.md`).
+Each `0N_<target>_inventory.zsh` script takes minutes to over an hour depending on target size (Documents: 275s–3915s across runs). Run it in a terminal session you intend to keep open; do not background it and forget about it — that is exactly how the 2026-08-01 Task 03 incident happened (see `RISK_REGISTER.md`). Every target script carries its own execution lock (`logs/.taskNN.lock`), so a second accidental invocation of the *same* script fails fast instead of racing — but nothing stops you from starting two *different* target scripts at once if you choose to; that's fine, they don't share output paths.
 
-Optional Spotlight enrichment (adds runtime, off by default):
+Optional Spotlight enrichment (adds runtime, off by default), same flag on any target script:
 
 ```
-COLLECT_SPOTLIGHT=1 ./scripts/03_documents_inventory.zsh
+COLLECT_SPOTLIGHT=1 ./scripts/04_desktop_inventory.zsh
 ```
 
 ## Recovering from a stuck or duplicated Task 03 run
@@ -83,9 +84,9 @@ A successful run's own internal validation gate already checks this before publi
 
 ## Adding a new inventory target
 
-1. Add the target name and path to `config/inventory_targets.yaml`.
-2. Create `inventory/<Target>/`.
-3. Run `./scripts/02_inventory_engine.zsh` and confirm `READY` with 0 failures.
-4. Write or reuse a task script following the pattern in `SYSTEM_ARCHITECTURE.md` (stage → scan → validate → publish → release lock).
+1. Confirm the target name and path already exist in `config/inventory_targets.yaml` and `inventory/<Target>/` exists (both are already true for all 8 configured targets).
+2. Run `./scripts/02_inventory_engine.zsh` and confirm `READY` with 0 failures.
+3. Clone the most recently added target script (as of this writing, `scripts/04_desktop_inventory.zsh`, cloned from `03_documents_inventory.zsh`) rather than writing from scratch. Change only: the header comment, `TARGET_NAME`, `REPORT_PATH`, `LOCK_DIR`, the `mktemp` template suffix, the awk match string (`$0 == "<Target>:"`), the two user-facing "Configured `<Target>`" / "Another Task N" error strings, and the report title strings. Everything else — locking, staging, validation, atomic publish — stays identical. This is deliberate (`DECISIONS.md` D7): don't parameterize into a shared script until at least three targets are proven identical in practice.
+4. Diff the new script against its parent before running it for the first time — every changed line should be explainable as one of the six items above. Any other difference is a mistake, not a feature.
 
 External disks and CloudStorage-backed targets require explicit separate approval before this sequence — see `docs/SAFETY_RULES.md`, rule 9.

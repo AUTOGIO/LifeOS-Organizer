@@ -9,7 +9,9 @@ No version tags — this project has no releases yet, only dated task entries. N
 - **Added:** Full documentation set — `PROJECT_CONTEXT.md`, `README.md`, `PROJECT_CHARTER.md`, `EXECUTIVE_REPORT.md`, `SYSTEM_ARCHITECTURE.md`, `ROADMAP.md`, `AI_COLLABORATION.md`, `DECISIONS.md`, `RUNBOOK.md`, `QUALITY_GATES.md`, `RISK_REGISTER.md`, this file.
 - **Added:** Extended the same execution-lock pattern to `scripts/01_environment_baseline.zsh` and `scripts/02_inventory_engine.zsh` (`logs/.task01.lock`, `logs/.task02.lock`). See `DECISIONS.md` D6.
 - **Added:** `git init` — this repository now has version control. Initial commit captures the full pre-fix and post-fix state in one snapshot (26 files); history from here forward is incremental.
-- **Known issue, not yet closed:** the corrupted `inventory/Documents/metadata.csv` / `metadata.json` artifacts from the concurrency incident (below) are still on disk as of this entry. Operator must terminate the stale processes and run one clean pass; see `RUNBOOK.md`. This step requires an interactive terminal session on the operator's Mac and cannot be executed remotely.
+- **Closed:** Task 03 concurrency incident. Operator confirmed 9 stale process trees via `ps`, terminated them with `pkill -TERM`, confirmed zero survivors, then ran one clean pass. Result: Inventory ID `INV-20260802-013608`, 128,305 files, 17,786 directories, 161,275,096,221 bytes, 275-second runtime, 1 warning, 0 errors. Independently validated: `metadata.csv` and `metadata.json` both hold 146,091 records, all under the same Inventory ID.
+- **Added:** `scripts/04_desktop_inventory.zsh` — Task 04, Desktop target. Cloned from the validated `03_documents_inventory.zsh` rather than parameterized (`DECISIONS.md` D7).
+- **Task 04 — Desktop Inventory. Done and validated on first run**, no incident. Inventory ID `INV-20260802-132721`: 99 files, 21 directories, 99,051,425 bytes, 1-second runtime, 1 warning, 0 errors. `metadata.csv`/`metadata.json` independently confirmed at 120 matching records under one consistent Inventory ID.
 
 ## 2026-08-01
 

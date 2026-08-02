@@ -2,8 +2,8 @@
 
 ## Metadata
 
-- Inventory ID: INV-20260801-001
-- Timestamp: 2026-08-01T18:44:35-0300
+- Inventory ID: INV-20260802-013608
+- Timestamp: 2026-08-02T01:36:08-0300
 - Engine: Task 03 Documents metadata inventory
 
 ## Folder Path
@@ -12,14 +12,14 @@
 
 ## Scan Time
 
-586 seconds
+275 seconds
 
 ## Folder Statistics
 
-- Total files: 128173
-- Total directories: 17730
-- Total size (regular non-directory entries): 161584842619 bytes
-- Hidden entries: 91372
+- Total files: 128305
+- Total directories: 17786
+- Total size (regular non-directory entries): 161275096221 bytes
+- Hidden entries: 91546
 - Package directories: 0
 - Symlinks: 742
 
@@ -27,7 +27,7 @@
 - svg: 17136
 - py: 17124
 - xml: 13991
-- [none]: 13548
+- [none]: 13653
 - ajson: 4866
 - pyc: 4088
 - js: 3934
@@ -36,11 +36,11 @@
 - json: 2336
 - mjs: 2047
 - ts: 1753
-- md: 1551
+- md: 1564
 - pyi: 1414
 - png: 1289
 - h: 1157
-- txt: 759
+- txt: 760
 - csv: 757
 - xlsx: 469
 - o: 464
@@ -63,18 +63,18 @@
 - 1073741824 bytes — /Users/eduardofgiovannini/Documents/GitHub/System_Org 2/.build/out/CompilationCache.noindex/generic/v1.1/actions 2.v1
 - 1073741824 bytes — /Users/eduardofgiovannini/Documents/GitHub/MacHealthOS/.build/out/CompilationCache.noindex/generic/v1.1/actions 2.v1
 - 1073741824 bytes — /Users/eduardofgiovannini/Documents/GitHub/LitoralPriceTracker/.build/out/CompilationCache.noindex/generic/v1.1/actions 2.v1
-- 460069265 bytes — /Users/eduardofgiovannini/Documents/GitHub/LifeOS-Organizer/inventory/Documents/metadata.json
-- 315057865 bytes — /Users/eduardofgiovannini/Documents/GitHub/LifeOS-Organizer/inventory/Documents/metadata.csv
 - 299326765 bytes — /Users/eduardofgiovannini/Documents/GitHub/fulofilo-analytics/.git/objects/pack/pack-34024e2d4dab4e6434fbae4a75a991400bd846f0.pack
 - 280946058 bytes — /Users/eduardofgiovannini/Documents/FACTORY_PROJECTS/PRINT_2026_2027_DESERTO_ENCANTADO.zip
+- 275995428 bytes — /Users/eduardofgiovannini/Documents/GitHub/LifeOS-Organizer/inventory/Documents/metadata.json
+- 188374628 bytes — /Users/eduardofgiovannini/Documents/GitHub/LifeOS-Organizer/inventory/Documents/metadata.csv
 - 169664771 bytes — /Users/eduardofgiovannini/Documents/FACTORY_PROJECTS/PRINT_2026_2027_DESERTO_ENCANTADO/09_EXPORT/PRINT_2026_2027_FACTORY_PACKAGE.zip
 - 157328184 bytes — /Users/eduardofgiovannini/Documents/GitHub/financas-2026/src/nfce/notas/nfce.pdf
 - 121226152 bytes — /Users/eduardofgiovannini/Documents/GitHub/System_Org 2/.git/objects/pack/pack-7ccce08338d420edc1b925c949e2e05e13944d41.pack
 - 121115136 bytes — /Users/eduardofgiovannini/Documents/GitHub/fulofilo-analytics/.venv/lib/python3.12/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
 
 ### Largest Directories
-- 161584842619 bytes — /Users/eduardofgiovannini/Documents
-- 160516298442 bytes — /Users/eduardofgiovannini/Documents/GitHub
+- 161275096221 bytes — /Users/eduardofgiovannini/Documents
+- 160206552044 bytes — /Users/eduardofgiovannini/Documents/GitHub
 - 40294091085 bytes — /Users/eduardofgiovannini/Documents/GitHub/LitoralPriceTracker
 - 40183516604 bytes — /Users/eduardofgiovannini/Documents/GitHub/System_Org 2
 - 40035554881 bytes — /Users/eduardofgiovannini/Documents/GitHub/System_Org 2/.build
@@ -116,4 +116,4 @@ Creation, modification, and access timestamps are present per entry in metadata.
 - This is metadata-only inventory; no document content was opened, parsed, summarized, or OCR-processed.
 
 ---
-Footer: Inventory INV-20260801-001 is read-only and does not authorize file changes.
+Footer: Inventory INV-20260802-013608 is read-only and does not authorize file changes.

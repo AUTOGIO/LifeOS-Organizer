@@ -4,6 +4,18 @@ Architecture decision log. Newest first. Each entry: context, decision, conseque
 
 ---
 
+## D7 — Clone per target instead of parameterizing, until proven otherwise (2026-08-02)
+
+**Context.** With Task 03 (Documents) validated end-to-end, the next step was scanning additional targets (Desktop, Downloads, Pictures, Movies, Music). Two options: write one parameterized script that takes a target name/path, or clone the validated Task 03 script per target with minimal, mechanical changes.
+
+**Decision.** Clone. `scripts/04_desktop_inventory.zsh` is `03_documents_inventory.zsh` with exactly six categories of change (header comment, `TARGET_NAME`, `REPORT_PATH`, `LOCK_DIR`, `mktemp` suffix, awk match string, user-facing target-name strings, report titles) — every other line, including all locking, staging, and validation logic, is untouched. Confirmed via `diff` before use.
+
+**Consequences.** More files to keep in sync if the shared logic ever needs a fix (as it did twice already for Task 03 — see D4/D5). Accepted deliberately: with only one validated target, a shared/parameterized script would be an abstraction built on a sample size of one, and any target-specific quirk (scale, symlink density, file types) would land in shared code before it's understood. Revisit after Desktop plus one more target are both done and clearly identical in structure — that's a "rule of three" trigger, not before.
+
+**Status.** Implemented. `scripts/04_desktop_inventory.zsh` created, not yet executed against real data.
+
+---
+
 ## D6 — Execution lock extended to Tasks 01 and 02 (2026-08-02)
 
 **Context.** D5 added an execution lock only to `03_documents_inventory.zsh`, the script actually involved in the concurrency incident. `RISK_REGISTER.md` (R1) flagged the same unlocked-concurrent-invocation risk as latent in `01_environment_baseline.zsh` and `02_inventory_engine.zsh` — lower likelihood today (both are fast, interactive, rarely rerun mid-flight) but the same bug class.

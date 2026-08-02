@@ -10,7 +10,7 @@ Format: risk, evidence, impact, status, mitigation.
 
 **Impact.** High while unmitigated — a validated, successful scan (Aug 1, 128,173 files, 0 errors) was overwritten into an unusable state by later stale processes.
 
-**Status.** Mitigated 2026-08-02 — execution lock added (`DECISIONS.md`, D5). **Not yet closed operationally**: the stale processes identified in Task 02.5 must still be terminated and a clean rerun completed on the Mac (`RUNBOOK.md`).
+**Status.** Closed 2026-08-02. Execution lock added (`DECISIONS.md`, D5) and confirmed working under real conditions: operator identified all 9 stale process trees, terminated them (`pkill -TERM`), confirmed zero survivors, then ran one clean pass. Result: Inventory ID `INV-20260802-013608`, 128,305 files / 17,786 directories, 0 errors, `metadata.csv`/`metadata.json` independently validated at 146,091 matching records each under a single consistent Inventory ID.
 
 **Mitigation.** Execution lock in `03_documents_inventory.zsh`. Extended to `01_environment_baseline.zsh` and `02_inventory_engine.zsh` the same day (`DECISIONS.md` D6) — all three task scripts now refuse concurrent invocation.
 

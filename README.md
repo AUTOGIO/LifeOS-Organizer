@@ -34,9 +34,10 @@ cd /Users/eduardofgiovannini/Documents/GitHub/LifeOS-Organizer
 ./scripts/01_environment_baseline.zsh   # environment/safety baseline
 ./scripts/02_inventory_engine.zsh       # framework readiness check
 ./scripts/03_documents_inventory.zsh    # Documents metadata inventory
+./scripts/04_desktop_inventory.zsh      # Desktop metadata inventory
 ```
 
-Only one instance of `03_documents_inventory.zsh` may run at a time; it now enforces this with an execution lock.
+Every task script enforces an execution lock — only one instance of a given script may run at a time.
 
 ## Safety contract
 

@@ -4,12 +4,12 @@ Format: Now / Next / Later. Nothing moves left until the item to its left is clo
 
 ## Now
 
-- Close out Task 03: operator terminates the 9 stale process trees and runs one clean, lock-protected pass of `03_documents_inventory.zsh`.
-- Confirm the resulting `metadata.csv` / `metadata.json` pass validation and carry a single, unique Inventory ID.
+- Clone `scripts/04_desktop_inventory.zsh` into a Downloads script (`05_downloads_inventory.zsh`) and run it — Downloads is next per the original target order.
 
 ## Next
 
-- Scan the remaining seven configured targets, one task per target, reusing the same staged-publish pattern: Desktop, Downloads, Pictures, Movies, Music, CloudStorage, Volumes.
+- Scan the remaining configured targets one at a time: Pictures, Movies, Music.
+- Two targets (Documents, Desktop) are now done and structurally identical — the "rule of three" trigger for deciding whether to fold per-target scripts into one parameterized script (`DECISIONS.md` D7) lands after the next one (Downloads).
 - CloudStorage and Volumes require separate, explicit approval before their first scan (per `docs/SAFETY_RULES.md`, rule 9) — external and cloud-backed paths are not auto-included even though they are already configured.
 
 ## Later

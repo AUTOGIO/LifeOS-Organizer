@@ -4,7 +4,7 @@ Status as of: 2026-08-02
 
 ## Summary
 
-The inventory framework is built and validated. One of eight configured targets (Documents) has a completed metadata scan. Publication of that scan's artifacts was corrupted by a concurrency defect; the defect has been fixed in code today, but the corrupted artifacts on disk have not yet been regenerated — that requires one more script run on the operator's Mac.
+The inventory framework is built and validated. Two of 8 configured targets — Documents and Desktop — have clean, validated metadata scans on disk. The concurrency defect that corrupted the original Documents scan is fixed in code and confirmed working under real conditions; Desktop, scanned with the same script pattern from the start, completed clean on its first run with no incident.
 
 ## Work completed
 
@@ -13,7 +13,8 @@ The inventory framework is built and validated. One of eight configured targets 
 | 01 — Environment Baseline | Done. Machine, OS, disk, and required-path checks recorded. |
 | 02 — Inventory Engine | Done. Framework readiness validated, 0 failures / 0 warnings. |
 | 02.5 — Process Diagnostics | Done. Found 9 stale, non-completing Task 03 process trees; root-caused to repeated manual execution without an execution lock. |
-| 03 — Documents Inventory | Metadata collected: 128,173 files, 17,730 directories, 161,584,842,619 bytes, 586-second runtime, 1 warning, 0 errors. Publish artifacts (`metadata.csv`, `metadata.json`) were subsequently overwritten by the stale processes identified in Task 02.5 and are currently invalid. |
+| 03 — Documents Inventory | **Done and validated.** Inventory ID `INV-20260802-013608`: 128,305 files, 17,786 directories, 161,275,096,221 bytes, 275-second runtime, 1 warning, 0 errors. `metadata.csv` and `metadata.json` independently confirmed to hold 146,091 matching records each, all stamped with the same Inventory ID. |
+| 04 — Desktop Inventory | **Done and validated, clean on first run.** Inventory ID `INV-20260802-132721`: 99 files, 21 directories, 99,051,425 bytes, 1-second runtime, 1 warning, 0 errors. `metadata.csv`/`metadata.json` independently confirmed at 120 matching records under one consistent Inventory ID. |
 
 ## Key findings
 
@@ -30,18 +31,14 @@ The inventory framework is built and validated. One of eight configured targets 
 
 No corrupted artifact was hand-edited. The script's existing pre-publish validation gate (CSV/JSON parity, consistent Inventory ID) already refuses to publish a bad result, so the safest path is a clean rerun, not a manual repair.
 
-## Outstanding action (operator, on the Mac — not completed as of this report)
+## Outstanding action
 
-1. Confirm and terminate the 9 stale Task 03 process trees.
-2. Run one clean pass of the patched script from a persistent terminal session (~10–65+ minutes based on prior run times).
-3. Confirm the new report shows a fresh Inventory ID and that `metadata.csv` / `metadata.json` row counts match.
-
-Exact commands: `RUNBOOK.md`.
+None for Task 03. Closed 2026-08-02 01:36. The lock held correctly through the recovery run — the process list showed zero survivors after `pkill -TERM`, and the subsequent run produced exactly one completion line with no racing output.
 
 ## Risk posture
 
-No user file has been modified, moved, renamed, deleted, or opened for content inspection at any point in this project. The corruption incident was confined to the project's own output artifacts. Full detail: `RISK_REGISTER.md`.
+No user file has been modified, moved, renamed, deleted, or opened for content inspection at any point in this project. The corruption incident was confined to the project's own output artifacts, and the fix has now been exercised end-to-end under real conditions (9 stale processes present, killed, clean rerun, independently validated). Full detail: `RISK_REGISTER.md`.
 
-## Next phase (not started)
+## Next phase
 
-Scan the remaining seven targets, then begin the metadata-before-AI classification phase per the project charter. No target work proceeds until this report's outstanding action is closed.
+Scan the remaining six targets (Downloads, Pictures, Movies, Music, and — pending separate approval — CloudStorage and Volumes), then begin the metadata-before-AI classification phase per the project charter. See `ROADMAP.md`.
