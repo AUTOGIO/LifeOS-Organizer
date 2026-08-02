@@ -4,6 +4,72 @@ Architecture decision log. Newest first. Each entry: context, decision, conseque
 
 ---
 
+## D14 — Package directories now recorded once, not silently excluded; two bugs found and fixed en route (2026-08-02)
+
+**Context.** D13's proposal was approved with a narrower scope than originally written: not just add `.photoslibrary` to the prune patterns, but fix the deeper gap it exposed — package directories were never being recorded as a single row at all, for any of the 9 patterns, since D2. Operator approved a minimal, targeted correction: emit the matched directory once, then prune, no engine redesign, no classification-rule changes.
+
+**Root cause.** The original `find -xdev \( -type d \( -name patterns \) -prune -o -exec stat ... {} + \)` shape relies on `-o` short-circuiting: when a directory matches the prune patterns, `-prune`'s own success makes the left side of the `-o` true, so the right side (`-exec`/`-print`) never runs for that specific entry — not just for its descendants. This silently excluded every package directory itself from the inventory, not merely their contents, for as long as D2 has existed. Confirmed via grep: `IsPackage=true` had a count of exactly 0 across all 6 local targets' published inventories, historically and currently, before this fix.
+
+**Fix, attempt 1 (broken, caught before further damage).** Gave the package-matching branch its own `-exec ... {} \; -prune`, keeping the fallback branch's original batched `{} +`. This introduced a real bug: an extra, unmatched closing parenthesis was left over from the original single-group structure when restructuring into two branches. `bash -n` (the only syntax check available in this sandbox — no zsh here) could not catch this, since it's a `find` argument-grammar error, not a shell syntax error. The operator's first real run failed with `find: ): no beginning '('` and, because the script has no `set -e`, continued anyway, publishing an internally-consistent but completely empty result (`INV-20260802-201858`, 0 files, 0 directories) — the validation gate checks CSV/JSON consistency, not plausibility, so an empty-but-well-formed result passed it and overwrote the previous good Pictures inventory. No user file was affected; the only casualty was the project's own inventory artifact, immediately regenerable. See `RISK_REGISTER.md` R10 for this gap.
+
+**Fix, attempt 2 (correct, tested before shipping).** Two corrections:
+1. Removed the extra parenthesis (paren-balance re-verified programmatically: 2 opens / 2 closes on both affected lines, matching the original structure's balance).
+2. **Reordered `-prune` before `-exec`** in the package branch, not after. Reasoning: `find` evaluates an AND chain left-to-right and short-circuits on the first false term; `-exec`'s truthiness depends on the executed command's exit status. With `-exec` before `-prune` (the naive fix), a single failed `stat` call on one package directory would skip `-prune` entirely and fall through to full traversal of that directory's contents — silently defeating the fix for that one entry. `-prune` always evaluates true per POSIX, so listing it first guarantees pruning fires regardless of whether the side-action succeeds. **Verified with a controlled test** (substituting `/bin/false` for the stat call against a synthetic directory tree, run outside the mounted repo): the naive ordering leaked into the pruned directory's contents when the action failed; the corrected ordering did not, in either a failing- or succeeding-action scenario. Same fix applied to the safe-mode pre-scan entry-count expression (D8) for consistency between the two.
+
+**Verification performed.** `bash -n` (same pre-existing zsh-only `<->` false positive, no new errors). Exact command strings extracted programmatically from the committed file (not retyped) and executed against a synthetic tree in `/tmp`, outside the mounted repo, confirming: a package directory is emitted exactly once, its internals never appear, and this holds even when the action is forced to fail.
+
+**Result, operator's real run.** Task 06 (Pictures): `INV-20260802-202531`, 13 files, 6 directories (one more than the pre-fix-attempt's 5 — the package itself, now counted), 9,987,047 bytes. Independently confirmed: 19 CSV/JSON rows matching, single consistent Inventory ID, exactly one `IsPackage=true` row (`Photos Library.photoslibrary`), zero rows individually inventoried beneath it. Task 14 (Pictures classification): `CLS-20260802-202619`, 28 records (23 High / 2 Medium / 3 Low) from the 13 real files, `SourceInventoryID` confirmed matching the new Pictures inventory exactly.
+
+**Consequences.** `is_package_path()`/`package_count` now actually do what D2 originally described, for all 9 patterns, not just `.photoslibrary` — this was a project-wide latent gap, fixed project-wide, though the only target with real package content today is Pictures (confirmed via grep against the other 5 local targets — zero matches). `SYSTEM_ARCHITECTURE.md` step 4 updated to describe the corrected behavior.
+
+**Status.** Fully implemented and verified. Not yet committed — awaiting operator's final review of this summary before commit, per instruction.
+
+---
+
+## D13 — Pictures `.photoslibrary` package-pruning fix: proposed, not approved (2026-08-02)
+
+**Context.** Flagged as an open observation in D11. Assessed on operator request, explicitly as design-only — no code change, no re-run authorized in this decision.
+
+**Finding.** `is_package_path()` and both `find -prune` expressions in `scripts/lib/inventory_engine.zsh` (D2) prune `*.photo\ library` (with a space) but not `*.photoslibrary` (the real, modern extension). Quantified against the real inventory: 8,964 of Pictures' 8,982 rows (99.8%) are the internals of one `Photos Library.photoslibrary` package that should have been recorded as a single opaque entry. Confirmed via grep that zero rows in any other of the 5 local targets mention `.photoslibrary` — the fix lives in the shared engine, but today's practical impact is Pictures-only.
+
+**Proposal.** Full write-up in `PICTURES_PACKAGE_FIX_PROPOSAL.md`: three one-line additive edits (extend the existing OR-lists in `is_package_path()` and both `find -prune` expressions), a re-run of Task 06 (Pictures inventory) required afterward since the fix only affects future scans, and a consequent re-run of Task 14 (Pictures classification) since its `SourceInventoryID` would otherwise reference a now-stale inventory snapshot — the classification engine's own validation gate would catch that mismatch, not silently drift.
+
+**Status.** Proposed, not approved. No file has been edited. Pictures has not been re-inventoried or re-classified. Awaiting explicit operator approval before touching `scripts/lib/inventory_engine.zsh` or running Task 06/14 again.
+
+---
+
+## D12 — Documents classification triage built and run (2026-08-02)
+
+**Context.** Operator directed the next safe phase: reduce the Documents classification review queue (132,279 records, `DECISIONS.md` D11) into practical, prioritized review batches, using only the existing `classification/Documents/` proposal and `inventory/Documents/` artifacts — no filesystem rescan, no mutation, no commit until reviewed. Five priority tiers were specified: (1) high-confidence build/cache artifacts, (2) largest files/directories, (3) exact name+size duplicate-risk candidates, (4) medium-confidence duplicate and stale-file candidates, (5) low-confidence/ambiguous records last — each requiring record count, total size, rationale, confidence tier, review-mandatory flag, examples, and a recommended next action.
+
+**Decision — mapping the 5 requested tiers onto the actual classification schema.** The user's 5 tiers don't map one-to-one onto the classification pipeline's dimensions/labels, so the mapping is documented explicitly here rather than silently assumed:
+
+1. `duplicate-risk: regeneratable-build-artifact` (High, path-pattern + exact size match).
+2. Top 50 files by `SizeBytes` (joined from `inventory/Documents/metadata.csv`, since `classification_proposal.csv` doesn't carry sizes) not already in batch 1. Largest directories are reported for context only, pulled from the already-computed ranking in `inventory/Documents/summary.md` — directories were never individually classified (only `IsDirectory=='false'` rows are), so they can't be "batched" the same way.
+3. `duplicate-risk: possible-duplicate-candidate` (Medium, exact Name+SizeBytes match outside a build-cache pattern) — the strongest true duplicate signal available.
+4. `duplicate-risk: same-name-different-size` (Low, weaker signal) plus `staleness: stale`/`very-stale` (High tier — staleness bucket assignment is deterministic date arithmetic; grouped here by the operator's priority logic, not because its confidence tier changed). This is flagged explicitly because "stale-file candidates" as requested implies Medium confidence, but no such label exists in the current schema.
+5. Everything else — dominated by `file-type: unclassified-type` (Low) and plain project-grouping/file-type labels with no other signal.
+
+Batch assignment is per unique `FullPath` (one batch per file, first-match-wins in the priority order above), not per raw classification record, since a file can carry 2-4 dimension records and record-level batching would double-count it.
+
+**Implementation.** `scripts/16_documents_triage.zsh` — single-purpose script (not a shared library; only one use case exists, consistent with D7's rule-of-three reasoning), reads `classification/Documents/classification_proposal.csv`, `inventory/Documents/metadata.csv`, and `inventory/Documents/summary.md` only. Same lock/stage/generate/validate/publish pattern as every other task script. Output: `review/Documents/EXECUTIVE_SUMMARY.md`, `triage_batches.csv/json`, `triage_assignments.csv/json`, `reports/16_documents_triage.txt`.
+
+**Verification performed (scratch, per R9's corrected method) and result.** Generated and validated against the real, published Documents classification (`CLS-20260802-160151`) and inventory (`INV-20260802-141128`) from `/tmp`, then copied into `review/Documents/` (plain file copy, not the locked pipeline — no lock/staging artifact was created inside the mounted repo this time). All 128,380 classified files were assigned to exactly one batch, summing correctly, with total size across all batches (161,007,433,747 bytes) matching Documents' known total exactly:
+
+| Batch | Files | Total size |
+|---|---|---|
+| 1 — regeneratable build/cache artifacts | 8,997 | 146,553,591,983 B |
+| 2 — largest files (top 50, not in batch 1) | 50 | 8,619,602,903 B |
+| 3 — exact duplicate-risk candidates | 42,317 | 724,998,881 B |
+| 4 — weak duplicate + stale candidates | 16,920 | 955,547,782 B |
+| 5 — low-confidence/ambiguous | 60,096 | 4,153,692,198 B |
+
+Notable finding surfaced by batch 2: this project's own `logs/03_documents_inventory_debug.log` (5.4 GB) is currently the single largest file under Documents — a leftover from the original Task 03 concurrency incident (`RISK_REGISTER.md` R1), inventoried like any other file since `Documents/GitHub` includes this very repository.
+
+**Status.** Built and run once (scratch-verified copy). `scripts/16_documents_triage.zsh` exists for the operator to re-run on the real Mac for full provenance (mirrors the Task 10 pattern) before committing — not yet done. **Not committed**, per operator instruction, pending review of both this and D13.
+
+---
+
 ## D11 — Classification extended to the remaining 5 local targets (2026-08-02)
 
 **Context.** Operator reviewed the Downloads dry run (Task 10, committed `ab0a51f`) and gave a clean "go ahead" to proceed. `CLASSIFICATION_DESIGN.md` §6 step 5 allowed moving straight to a parameterized rollout, rather than repeating D7's clone-first-then-refactor cycle, if the dry run gave enough confidence — it did (exact match between sandbox-verified and operator-run numbers), and unlike inventory's original per-target scripts, `run_classification_task` was already built parameterized from the start (D10), so no engine change was needed for the remaining targets.

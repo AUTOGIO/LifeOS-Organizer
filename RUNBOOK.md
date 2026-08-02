@@ -208,6 +208,26 @@ print('row count match:', len(records) == len(rows))
 "
 ```
 
+## Running the Documents classification triage (Task 16)
+
+Approved 2026-08-02 (`DECISIONS.md` D12). Read-only — reads only `classification/Documents/classification_proposal.csv` and `inventory/Documents/{metadata.csv,summary.md}`, never rescans the filesystem, never re-runs classification, performs no file mutation.
+
+```
+./scripts/16_documents_triage.zsh
+```
+
+Output goes to `review/Documents/` (`EXECUTIVE_SUMMARY.md`, `triage_batches.csv/json`, `triage_assignments.csv/json`) and `reports/16_documents_triage.txt`. A scratch-verified run already produced these exact counts — yours should match (only the `TriageID`/timestamp differ):
+
+| Batch | Files | Total size |
+|---|---|---|
+| 1 — regeneratable build/cache artifacts | 8,997 | 146,553,591,983 B |
+| 2 — largest files (top 50, not in batch 1) | 50 | 8,619,602,903 B |
+| 3 — exact duplicate-risk candidates | 42,317 | 724,998,881 B |
+| 4 — weak duplicate + stale candidates | 16,920 | 955,547,782 B |
+| 5 — low-confidence/ambiguous | 60,096 | 4,153,692,198 B |
+
+Do not commit until you've reviewed `review/Documents/EXECUTIVE_SUMMARY.md` — see `DECISIONS.md` D12.
+
 ## Adding a new inventory target
 
 1. Confirm the target name and path already exist in `config/inventory_targets.yaml` and `inventory/<Target>/` exists (both are already true for all 8 configured targets).

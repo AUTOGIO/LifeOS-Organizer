@@ -1,10 +1,10 @@
 LifeOS Organizer — Pictures Classification Proposal (DRY RUN)
-Classification ID: CLS-20260802-160143
-Source Inventory ID: INV-20260802-141844
-Timestamp: 2026-08-02T16:01:43-0300
-Total records: 17323
-Confidence — High: 11386, Medium: 2, Low: 5935
-Review queue: 5937
+Classification ID: CLS-20260802-202619
+Source Inventory ID: INV-20260802-202531
+Timestamp: 2026-08-02T20:26:19-0300
+Total records: 28
+Confidence — High: 23, Medium: 2, Low: 3
+Review queue: 5
 Warnings: 0
 Errors: 0
 Safety result: no user file was modified, moved, renamed, deleted, copied, or opened for content inspection. Input was inventory/Pictures/metadata.csv only — the filesystem was not rescanned.

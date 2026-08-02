@@ -1,0 +1,12 @@
+LifeOS Organizer — Documents Classification Triage
+Triage ID: TRG-20260802-161240
+Source Classification ID: CLS-20260802-160151
+Source Inventory ID: INV-20260802-141128
+Timestamp: 2026-08-02T16:12:40-0300
+Total files triaged: 128380
+Batch 1 (High-confidence regeneratable build/cache artifacts): 8997 files, 146,553,591,983 bytes
+Batch 2 (Largest files (top 50 by size, not already in batch 1)): 50 files, 8,619,602,903 bytes
+Batch 3 (Exact name+size duplicate-risk candidates (non-build)): 42317 files, 724,998,881 bytes
+Batch 4 (Medium-confidence duplicate (weak signal) and stale-file candidates): 16920 files, 955,547,782 bytes
+Batch 5 (Low-confidence or ambiguous records): 60096 files, 4,153,692,198 bytes
+Safety result: read-only. No file was moved, renamed, tagged, copied, deleted, or modified. No filesystem rescan occurred.

@@ -1,0 +1,226 @@
+[
+  {
+    "BatchNumber": 1,
+    "BatchName": "High-confidence regeneratable build/cache artifacts",
+    "RecordCount": 8997,
+    "TotalSizeBytes": 146553591983,
+    "ConfidenceTiersPresent": [
+      "High"
+    ],
+    "RequiresReviewMandatory": false,
+    "Examples": [
+      {
+        "FullPath": "/Users/eduardofgiovannini/Documents/GitHub/LitoralPriceTracker/.build/out/CompilationCache.noindex/generic/v1.1/data 2.v1",
+        "SizeBytes": 25769803776,
+        "PrimaryReason": "regeneratable-build-artifact",
+        "ConfidenceTier": "High"
+      },
+      {
+        "FullPath": "/Users/eduardofgiovannini/Documents/GitHub/CodexCheatSheet/.build/out/CompilationCache.noindex/generic/v1.1/data 2.v1",
+        "SizeBytes": 25769803776,
+        "PrimaryReason": "regeneratable-build-artifact",
+        "ConfidenceTier": "High"
+      },
+      {
+        "FullPath": "/Users/eduardofgiovannini/Documents/GitHub/MacHealthOS/.build/out/CompilationCache.noindex/generic/v1.1/data 2.v1",
+        "SizeBytes": 25769803776,
+        "PrimaryReason": "regeneratable-build-artifact",
+        "ConfidenceTier": "High"
+      },
+      {
+        "FullPath": "/Users/eduardofgiovannini/Documents/GitHub/System_Org 2/.build/out/CompilationCache.noindex/generic/v1.1/data 2.v1",
+        "SizeBytes": 25769803776,
+        "PrimaryReason": "regeneratable-build-artifact",
+        "ConfidenceTier": "High"
+      },
+      {
+        "FullPath": "/Users/eduardofgiovannini/Documents/GitHub/LitoralPriceTracker/.build/out/CompilationCache.noindex/generic/v1.1/index 2.v1",
+        "SizeBytes": 12884901888,
+        "PrimaryReason": "regeneratable-build-artifact",
+        "ConfidenceTier": "High"
+      }
+    ],
+    "WhyPrioritized": "Deterministic path-pattern match (.build/, CompilationCache.noindex, etc.) plus exact size match across independent project trees. Largest, safest, most impactful signal \u2014 these are structurally regeneratable build outputs, not user data.",
+    "RecommendedNextAction": "No individual review needed to *identify* these \u2014 the pattern match is reliable. Read-only for now: no deletion or regeneration action is authorized in this phase. Worth a future, separately-approved proposal once a remediation phase exists."
+  },
+  {
+    "BatchNumber": 2,
+    "BatchName": "Largest files (top 50 by size, not already in batch 1)",
+    "RecordCount": 50,
+    "TotalSizeBytes": 8619602903,
+    "ConfidenceTiersPresent": [
+      "High",
+      "Low",
+      "Medium"
+    ],
+    "RequiresReviewMandatory": false,
+    "Examples": [
+      {
+        "FullPath": "/Users/eduardofgiovannini/Documents/GitHub/LifeOS-Organizer/logs/03_documents_inventory_debug.log",
+        "SizeBytes": 5402049443,
+        "PrimaryReason": "largest-file",
+        "ConfidenceTier": "High"
+      },
+      {
+        "FullPath": "/Users/eduardofgiovannini/Documents/GitHub/fulofilo-analytics/.git/objects/pack/pack-34024e2d4dab4e6434fbae4a75a991400bd846f0.pack",
+        "SizeBytes": 299326765,
+        "PrimaryReason": "largest-file",
+        "ConfidenceTier": "High"
+      },
+      {
+        "FullPath": "/Users/eduardofgiovannini/Documents/FACTORY_PROJECTS/PRINT_2026_2027_DESERTO_ENCANTADO.zip",
+        "SizeBytes": 280946058,
+        "PrimaryReason": "largest-file",
+        "ConfidenceTier": "High"
+      },
+      {
+        "FullPath": "/Users/eduardofgiovannini/Documents/FACTORY_PROJECTS/PRINT_2026_2027_DESERTO_ENCANTADO/09_EXPORT/PRINT_2026_2027_FACTORY_PACKAGE.zip",
+        "SizeBytes": 169664771,
+        "PrimaryReason": "largest-file",
+        "ConfidenceTier": "Low"
+      },
+      {
+        "FullPath": "/Users/eduardofgiovannini/Documents/GitHub/financas-2026/src/nfce/notas/nfce.pdf",
+        "SizeBytes": 157328184,
+        "PrimaryReason": "largest-file",
+        "ConfidenceTier": "High"
+      }
+    ],
+    "WhyPrioritized": "Highest absolute size impact on disk regardless of classification label. Reviewing the largest items first gives the fastest read on where space actually goes, independent of any heuristic.",
+    "RecommendedNextAction": "Manually skim the top 10-20 by size to confirm nothing here is unexpectedly user-critical (e.g. a real document that happens to be huge) before any future space-reclamation discussion."
+  },
+  {
+    "BatchNumber": 3,
+    "BatchName": "Exact name+size duplicate-risk candidates (non-build)",
+    "RecordCount": 42317,
+    "TotalSizeBytes": 724998881,
+    "ConfidenceTiersPresent": [
+      "Medium"
+    ],
+    "RequiresReviewMandatory": true,
+    "Examples": [
+      {
+        "FullPath": "/Users/eduardofgiovannini/Documents/GitHub/ipad-stream-deck-console/backups/stream-deck_2026-07-11_16-53-21/StreamDeck/Plugins/me.hckr.appswitcher.sdPlugin/Plugin",
+        "SizeBytes": 10071888,
+        "PrimaryReason": "possible-duplicate-candidate",
+        "ConfidenceTier": "Medium"
+      },
+      {
+        "FullPath": "/Users/eduardofgiovannini/Documents/GitHub/ipad-stream-deck-console/backups/rollback-current-streamdeck_2026-07-26_17-00-00/Plugins/me.hckr.appswitcher.sdPlugin/Plugin",
+        "SizeBytes": 10071888,
+        "PrimaryReason": "possible-duplicate-candidate",
+        "ConfidenceTier": "Medium"
+      },
+      {
+        "FullPath": "/Users/eduardofgiovannini/Documents/GitHub/ipad-stream-deck-console/backups/stream-deck_2026-07-26_16-57-50/StreamDeck/Plugins/me.hckr.appswitcher.sdPlugin/Plugin",
+        "SizeBytes": 10071888,
+        "PrimaryReason": "possible-duplicate-candidate",
+        "ConfidenceTier": "Medium"
+      },
+      {
+        "FullPath": "/Users/eduardofgiovannini/Documents/GitHub/ipad-stream-deck-console/backups/stream-deck_2026-07-11_17-22-31/StreamDeck/Plugins/me.hckr.appswitcher.sdPlugin/Plugin",
+        "SizeBytes": 10071888,
+        "PrimaryReason": "possible-duplicate-candidate",
+        "ConfidenceTier": "Medium"
+      },
+      {
+        "FullPath": "/Users/eduardofgiovannini/Documents/FACTORY_PROJECTS/PRINT_2026_001_CORAL_BREEZE/03_MASTER_ARTWORK/abacaxi.png",
+        "SizeBytes": 8037635,
+        "PrimaryReason": "possible-duplicate-candidate",
+        "ConfidenceTier": "Medium"
+      }
+    ],
+    "WhyPrioritized": "Exact Name+SizeBytes match outside a recognized build-cache pattern \u2014 the strongest true \"these might be the same file\" signal this pipeline can produce without content hashing (see RISK_REGISTER R8).",
+    "RecommendedNextAction": "Spot-check a sample per RISK_REGISTER R8 \u2014 name+size match is a candidate, not proof. A human should open/compare a few pairs before treating any as a confirmed duplicate."
+  },
+  {
+    "BatchNumber": 4,
+    "BatchName": "Medium-confidence duplicate (weak signal) and stale-file candidates",
+    "RecordCount": 16920,
+    "TotalSizeBytes": 955547782,
+    "ConfidenceTiersPresent": [
+      "High",
+      "Low"
+    ],
+    "RequiresReviewMandatory": true,
+    "Examples": [
+      {
+        "FullPath": "/Users/eduardofgiovannini/Documents/FACTORY_PROJECTS/PRINT_2026_2027_DESERTO_ENCANTADO/08_FACTORY_PACKAGE/10_VECTOR_AND_REPEAT/artwork_PRINT_READY_300dpi.png",
+        "SizeBytes": 14189012,
+        "PrimaryReason": "same-name-different-size",
+        "ConfidenceTier": "Low"
+      },
+      {
+        "FullPath": "/Users/eduardofgiovannini/Documents/FACTORY_PROJECTS/PRINT_2026_2027_SUNSET_PALETTE/08_FACTORY_PACKAGE/10_VECTOR_AND_REPEAT/seamless_repeat_3x3_300dpi.png",
+        "SizeBytes": 13055399,
+        "PrimaryReason": "same-name-different-size",
+        "ConfidenceTier": "Low"
+      },
+      {
+        "FullPath": "/Users/eduardofgiovannini/Documents/FACTORY_PROJECTS/PRINT_2026_001_CORAL_BREEZE/08_FACTORY_PACKAGE/10_VECTOR_AND_REPEAT/seamless_repeat_2x2_300dpi.png",
+        "SizeBytes": 12203655,
+        "PrimaryReason": "same-name-different-size",
+        "ConfidenceTier": "Low"
+      },
+      {
+        "FullPath": "/Users/eduardofgiovannini/Documents/GitHub/fulofilo-analytics/macos/FuloFiloTerminal/.build/x86_64-apple-macosx/debug/ModuleCache/LHSV4NGLAOUE/AppKit-2VI8NB39I5AT6.pcm",
+        "SizeBytes": 11026872,
+        "PrimaryReason": "same-name-different-size",
+        "ConfidenceTier": "Low"
+      },
+      {
+        "FullPath": "/Users/eduardofgiovannini/Documents/FACTORY_PROJECTS/PRINT_2026_2027_CACTUS_CANVAS/08_FACTORY_PACKAGE/10_VECTOR_AND_REPEAT/seamless_repeat_2x2_300dpi.png",
+        "SizeBytes": 10089994,
+        "PrimaryReason": "same-name-different-size",
+        "ConfidenceTier": "Low"
+      }
+    ],
+    "WhyPrioritized": "Weaker duplicate signal (same name, different size \u2014 possibly different revisions) plus files whose ModificationDate places them in the stale/very-stale staleness buckets for this target's thresholds.",
+    "RecommendedNextAction": "Lower urgency than batch 3. Weak-duplicate entries and stale files are worth a periodic glance, not immediate triage."
+  },
+  {
+    "BatchNumber": 5,
+    "BatchName": "Low-confidence or ambiguous records",
+    "RecordCount": 60096,
+    "TotalSizeBytes": 4153692198,
+    "ConfidenceTiersPresent": [
+      "High",
+      "Low"
+    ],
+    "RequiresReviewMandatory": true,
+    "Examples": [
+      {
+        "FullPath": "/Users/eduardofgiovannini/Documents/GitHub/fulofilo-analytics/.venv/lib/python3.12/site-packages/pyarrow/libarrow_compute.2400 2.dylib",
+        "SizeBytes": 15689296,
+        "PrimaryReason": "unclassified-type",
+        "ConfidenceTier": "Low"
+      },
+      {
+        "FullPath": "/Users/eduardofgiovannini/Documents/GitHub/fulofilo-analytics/.venv/lib/python3.12/site-packages/pyarrow/libarrow_compute.2400.dylib",
+        "SizeBytes": 15689296,
+        "PrimaryReason": "unclassified-type",
+        "ConfidenceTier": "Low"
+      },
+      {
+        "FullPath": "/Users/eduardofgiovannini/Documents/GitHub/LitoralPriceTracker/data/raw/NOTAS_LITORAL/NFCE_20260720032352.txt",
+        "SizeBytes": 15458551,
+        "PrimaryReason": "document",
+        "ConfidenceTier": "High"
+      },
+      {
+        "FullPath": "/Users/eduardofgiovannini/Documents/GitHub/ItaliaOS/.derivedData/SDKStatCaches.noindex/macosx27.0-26A5378i-45874285e5972fffeae925c4ab065928.sdkstatcache",
+        "SizeBytes": 15274032,
+        "PrimaryReason": "unclassified-type",
+        "ConfidenceTier": "Low"
+      },
+      {
+        "FullPath": "/Users/eduardofgiovannini/Documents/GitHub/WorkflowSuggesterPro/.build/out/SDKStatCaches.noindex/macosx27.0-26A5378i-a0facfad118c1a7a18f0aad9463f654945874285e5972fffeae925c4ab065928 2.sdkstatcache",
+        "SizeBytes": 15274032,
+        "PrimaryReason": "unclassified-type",
+        "ConfidenceTier": "Low"
+      }
+    ],
+    "WhyPrioritized": "No actionable classification signal beyond a plain file-type or project-grouping label (often an unrecognized extension). Lowest priority; safe to review last or skip.",
+    "RecommendedNextAction": "Skim only if time permits. Consider whether the file-type lookup table should be extended if a common extension keeps appearing here."
+  }
+]

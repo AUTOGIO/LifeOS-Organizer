@@ -4,11 +4,12 @@ Format: Now / Next / Later. Nothing moves left until the item to its left is clo
 
 ## Now
 
-- All 6 local targets have committed, validated classification proposals (Tasks 10-15, `DECISIONS.md` D10/D11). Nothing queued for execution — awaiting operator direction on the two open observations below.
+- Three items awaiting operator's final review before a single commit: (1) Documents classification triage (`review/Documents/`, `DECISIONS.md` D12). (2) Pictures package-recording fix, implemented and verified (`DECISIONS.md` D14) — Task 06 and Task 14 both re-run and validated against the corrected inventory. (3) New `RISK_REGISTER.md` R10 (validation gate doesn't catch an empty-result regression), documented, not fixed — deliberately out of scope for D14's "minimal correction."
 
 ## Next
 
-- Two open observations from D11 need a follow-up conversation, not silent action: (1) Documents' classification review queue is large (132k records) — needs a triage-strategy discussion before treating it as actionable. (2) Pictures' inventory scan didn't prune the Photos Library package (`.photoslibrary` extension missing from D2's prune pattern) — an inventory-phase fix, separate from classification.
+- Commit once approved.
+- Consider whether R10 (plausibility check on inventory reruns) is worth a small follow-up gate — not scoped or approved yet.
 
 ## Later
 

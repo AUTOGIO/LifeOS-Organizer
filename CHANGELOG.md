@@ -2,6 +2,22 @@
 
 No version tags — this project has no releases yet, only dated task entries. Newest first.
 
+## 2026-08-02 (Pictures package-recording fix — implemented and verified, NOT committed)
+
+- **Decided:** operator approved a minimal correction so package directories are recorded once (`IsPackage=true`) instead of being silently excluded entirely — the deeper gap D13's proposal exposed. See `DECISIONS.md` D14.
+- **Fixed:** `scripts/lib/inventory_engine.zsh`'s package-matching `find` branch now uses its own `-exec ... {} \; -prune` (prune listed before exec, so pruning is guaranteed even if the stat action fails — verified with a controlled `/bin/false` test before shipping).
+- **Bug found and fixed before final handoff:** the first attempt left an unmatched closing parenthesis, causing a real `find` syntax error on the operator's Mac. Because the wrapper has no `set -e`, the run continued and published an empty-but-consistent Pictures inventory (`INV-20260802-201858`, 0 files), overwriting the previous good one. No user file affected — only the project's own regenerable artifact. See `RISK_REGISTER.md` R10 (new): the validation gate checks consistency, not plausibility, and doesn't catch a suspicious drop to zero.
+- **Verified (operator's real runs):** Task 06 — `INV-20260802-202531`, 13 files, 6 directories, exactly one `IsPackage=true` row for `Photos Library.photoslibrary`, zero rows beneath it, 19 CSV/JSON rows matching. Task 14 — `CLS-20260802-202619`, 28 records from the 13 real files, `SourceInventoryID` confirmed matching the corrected inventory.
+- **Updated:** `SYSTEM_ARCHITECTURE.md` (corrected scan-step description), `QUALITY_GATES.md` (documents the fix and the new R10 gap).
+- **Not committed.** Awaiting operator's final review of the validation summary.
+
+## 2026-08-02 (Documents triage + Pictures package-fix proposal — NOT committed)
+
+- **Added:** `scripts/16_documents_triage.zsh` and `review/Documents/` — reduces the 128,380-file Documents classification into 5 prioritized batches (build/cache artifacts, largest files, exact duplicate-risk, weak duplicate/stale, low-confidence). Reads only the already-published `classification/Documents/` and `inventory/Documents/` artifacts; no rescan, no mutation. See `DECISIONS.md` D12 for the full tier-mapping rationale and results.
+- **Found:** this project's own `logs/03_documents_inventory_debug.log` (5.4 GB, a leftover from the original Task 03 incident) is currently the single largest file under Documents.
+- **Added:** `PICTURES_PACKAGE_FIX_PROPOSAL.md` — assessment (not implementation) of a fix for `.photoslibrary` package pruning. Quantified: 99.8% of Pictures' inventory is one package's internals. Three one-line additive edits proposed, plus a required Task 06 + Task 14 re-run chain. See `DECISIONS.md` D13. **Not implemented, not approved.**
+- **Not committed.** Both items are staged for operator review per explicit instruction.
+
 ## 2026-08-02 (classification — remaining 5 local targets)
 
 - **Decided:** operator approved extending classification to Movies, Desktop, Music, Pictures, and Documents after reviewing the Downloads dry run. See `DECISIONS.md` D11.

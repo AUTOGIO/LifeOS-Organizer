@@ -111,3 +111,17 @@ Format: risk, evidence, impact, status, mitigation.
 **Mitigation.** Revised rule: the sandbox never creates lock or staging artifacts inside the synced repository, for any task. Verification of AI-authored pipeline logic runs against a scratch location outside the mounted repo (e.g. `/tmp` in the sandbox) instead of exercising the real lock/stage path.
 
 **Addendum (same day):** a plain `git status --short` — previously treated as unconditionally safe since it's read-only — also left a stray `.git/index.lock` once during this same verification session, undeletable from the sandbox for the same reason. Revised further: read-only git commands are still preferred over write commands from the sandbox, but are not guaranteed lock-free. The operator should always check for and clear stray `.git/*.lock` files before a commit, not just after a sandbox-run write command.
+
+---
+
+## R10 — Validation gate checks consistency, not plausibility
+
+**Evidence.** The D14 correction's first (broken) attempt caused a real `find` syntax error on the operator's Mac. Because the wrapper script has no `set -e`, the run continued past the failed scan and published a completely empty but internally-consistent result: `INV-20260802-201858`, 0 files, 0 directories, valid CSV/JSON with matching row counts (0 = 0) and a correctly-formatted, self-consistent Inventory ID. The embedded validation gate (`QUALITY_GATES.md`) passed it, and it overwrote the previous good Pictures inventory (13 files, 5 directories at the time).
+
+**Impact.** Medium. The gate's checks (row-count parity, ID consistency, ID format) are necessary but not sufficient — they can't distinguish "a small target really does have 0 files" from "the scan silently failed and produced nothing." A target going from N files to 0 between consecutive runs is exactly the kind of result that should raise a flag before publishing, and today it doesn't.
+
+**Status.** Open, documented. No fix implemented — flagged for a future quality-gate enhancement, not addressed as part of D14 (out of scope for "minimal, targeted correction").
+
+**Mitigation today.** None automated. The practical safety net that caught this was the operator's own explicit validation checklist (this project's established discipline of checking real output after every run, `RUNBOOK.md`), not the pipeline itself. No user file was at risk either way — only the project's own regenerable inventory artifact was affected, and it self-corrected on the next successful run.
+
+**Suggested future gate (not implemented):** compare the new run's file/directory count against the previous published run's; require explicit confirmation (or a `--force` flag) if the new count drops by some large factor (e.g. >90%) with no corresponding warning/error explaining why.

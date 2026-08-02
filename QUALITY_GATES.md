@@ -32,7 +32,13 @@ Any failure aborts the run (`exit 1`) and leaves the previously published artifa
 
 - Only one instance may hold the execution lock (`logs/.task03.lock`) at a time. A second invocation fails immediately rather than racing on shared paths. This closes the gap that caused the 2026-08-01 corruption (`RISK_REGISTER.md`).
 
+## Package directory recording (corrected 2026-08-02, `DECISIONS.md` D14)
+
+Before D14, the shared `find` prune expression excluded matched package directories (`.app`, `.pages`, `.photoslibrary`, etc.) entirely — not just their contents — because of how `-prune`/`-o` short-circuiting works. `IsPackage=true` had never actually appeared in any published inventory. Fixed by giving the package branch its own `-exec ... \; -prune` (prune listed first, so it fires even if the stat side-action fails) — verified with a controlled test forcing the action to fail before trusting it on a real run.
+
 ## Gaps — not yet covered
+
+- **Validation checks consistency, not plausibility** (`RISK_REGISTER.md` R10, found 2026-08-02). A scan that silently fails and produces 0 files still passes today's gate (0 CSV rows = 0 JSON records, trivially consistent) and will overwrite a previous good result. No large-drop or zero-result check exists yet.
 
 - **Tasks 01 and 02 write directly to their report paths**, with no staging/validation step. Acceptable today because both are fast, idempotent, and produce a single small text file, but if either script grows in scope, apply the same staged-publish pattern used in Task 03.
 - **No automated test suite.** Validation today is entirely runtime (the embedded Python check runs against real output on every execution); there is no offline test that exercises the scripts against a synthetic directory tree.

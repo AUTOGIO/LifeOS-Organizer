@@ -46,7 +46,7 @@ is_package_path() {
   local path="$1"
   [[ -d "$path" ]] || return 1
   case "${path:l}" in
-    *.app|*.bundle|*.framework|*.kext|*.pages|*.numbers|*.key|*.photo\ library|*.sparsebundle) return 0 ;;
+    *.app|*.bundle|*.framework|*.kext|*.pages|*.numbers|*.key|*.photo\ library|*.photoslibrary|*.sparsebundle) return 0 ;;
     *) return 1 ;;
   esac
 }
@@ -269,9 +269,13 @@ run_inventory_task() {
 
   # Safe-mode only (see run_inventory_task header comment). Same prune
   # expression as the scan below, path-only, so the count is comparable.
+  # Package directories are counted once each (matched entry printed, then
+  # pruned) — see the main scan's comment below for why this specific
+  # -print/-exec-then-prune shape is required to record the package entry
+  # itself instead of silently excluding it too (the correction in D14).
   local -i expected_entry_count=0
   if [[ "$SAFE_MODE" == '1' ]]; then
-    expected_entry_count="$(/usr/bin/find "$TARGET_PATH" -xdev \( -type d \( -name '*.app' -o -name '*.bundle' -o -name '*.framework' -o -name '*.kext' -o -name '*.pages' -o -name '*.numbers' -o -name '*.key' -o -name '*.photo library' -o -name '*.sparsebundle' \) -prune -o -print \) 2>/dev/null | /usr/bin/wc -l | /usr/bin/tr -d ' ')"
+    expected_entry_count="$(/usr/bin/find "$TARGET_PATH" -xdev \( -type d \( -name '*.app' -o -name '*.bundle' -o -name '*.framework' -o -name '*.kext' -o -name '*.pages' -o -name '*.numbers' -o -name '*.key' -o -name '*.photo library' -o -name '*.photoslibrary' -o -name '*.sparsebundle' \) -prune -print \) -o -print 2>/dev/null | /usr/bin/wc -l | /usr/bin/tr -d ' ')"
   fi
 
   print -- 'InventoryID,FullPath,RelativePath,Name,Extension,IsDirectory,IsPackage,IsHidden,IsSymlink,Owner,Group,Permissions,SizeBytes,CreationDate,ModificationDate,AccessDate,SpotlightContentType,SpotlightKind' > "$CSV_PATH"
@@ -349,7 +353,27 @@ run_inventory_task() {
         parent="${parent:h}"
       done
     fi
-  done < <(/usr/bin/find "$TARGET_PATH" -xdev \( -type d \( -name '*.app' -o -name '*.bundle' -o -name '*.framework' -o -name '*.kext' -o -name '*.pages' -o -name '*.numbers' -o -name '*.key' -o -name '*.photo library' -o -name '*.sparsebundle' \) -prune -o -exec /usr/bin/stat -f $'%N\x1f%HT\x1f%Su\x1f%Sg\x1f%Sp\x1f%z\x1f%SB\x1f%Sm\x1f%Sa' -t '%Y-%m-%dT%H:%M:%S%z' {} + \))
+  # D14 correction: a package directory must be stat'd once for itself
+  # (so is_package_path() below can see it and IsPackage=true is recorded)
+  # and then pruned so its internals are never visited. A plain
+  # `-prune -o -exec ... {} +` (the original D2 shape) does NOT do this —
+  # -prune's own success short-circuits the -o, so the matched directory's
+  # -exec never runs either, silently excluding the package entry itself,
+  # not just its contents. That gap existed for all 9 package patterns
+  # since D2 and was only noticed via the .photoslibrary fix (D13).
+  # Fix: give the package branch its own -exec (single-file `\;`, safe to
+  # combine with -prune unlike batched `+`); everything else keeps the
+  # original batched `{} +` for efficiency. -prune is listed BEFORE -exec
+  # deliberately, not after: find evaluates an AND chain left-to-right and
+  # short-circuits on the first false term, and -exec's truthiness depends
+  # on the command's exit status. If -exec came first and the stat call
+  # ever failed for any reason, -prune would never be reached and find
+  # would silently fall through to full traversal of that "pruned"
+  # directory's contents — confirmed with a controlled test (`/bin/false`
+  # as the action) before shipping this. -prune itself always evaluates
+  # true per POSIX, so placing it first guarantees the directory is pruned
+  # regardless of whether the stat side-action succeeds.
+  done < <(/usr/bin/find "$TARGET_PATH" -xdev \( -type d \( -name '*.app' -o -name '*.bundle' -o -name '*.framework' -o -name '*.kext' -o -name '*.pages' -o -name '*.numbers' -o -name '*.key' -o -name '*.photo library' -o -name '*.photoslibrary' -o -name '*.sparsebundle' \) -prune -exec /usr/bin/stat -f $'%N\x1f%HT\x1f%Su\x1f%Sg\x1f%Sp\x1f%z\x1f%SB\x1f%Sm\x1f%Sa' -t '%Y-%m-%dT%H:%M:%S%z' {} \; \) -o -exec /usr/bin/stat -f $'%N\x1f%HT\x1f%Su\x1f%Sg\x1f%Sp\x1f%z\x1f%SB\x1f%Sm\x1f%Sa' -t '%Y-%m-%dT%H:%M:%S%z' {} +)
 
   print >&4
   print -- ']' >&4
