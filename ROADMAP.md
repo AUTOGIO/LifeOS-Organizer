@@ -4,11 +4,11 @@ Format: Now / Next / Later. Nothing moves left until the item to its left is clo
 
 ## Now
 
-- Operator clears two stray artifacts left by sandbox verification (`classification/Downloads/.task10.*`, `logs/.task10.lock` — see `DECISIONS.md` D10), then runs `./scripts/10_downloads_classification.zsh` to produce the official Downloads classification proposal. Logic already verified against real data (161 records, 127 High / 0 Medium / 34 Low, 0 warnings/errors) — this run is to confirm the zsh orchestration layer and produce the committed artifact.
+- All 6 local targets have committed, validated classification proposals (Tasks 10-15, `DECISIONS.md` D10/D11). Nothing queued for execution — awaiting operator direction on the two open observations below.
 
 ## Next
 
-- Review the official Downloads run together. Only after that: extend to the remaining local targets one at a time, per `CLASSIFICATION_DESIGN.md` §6 step 5.
+- Two open observations from D11 need a follow-up conversation, not silent action: (1) Documents' classification review queue is large (132k records) — needs a triage-strategy discussion before treating it as actionable. (2) Pictures' inventory scan didn't prune the Photos Library package (`.photoslibrary` extension missing from D2's prune pattern) — an inventory-phase fix, separate from classification.
 
 ## Later
 

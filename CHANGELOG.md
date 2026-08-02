@@ -2,6 +2,14 @@
 
 No version tags — this project has no releases yet, only dated task entries. Newest first.
 
+## 2026-08-02 (classification — remaining 5 local targets)
+
+- **Decided:** operator approved extending classification to Movies, Desktop, Music, Pictures, and Documents after reviewing the Downloads dry run. See `DECISIONS.md` D11.
+- **Added:** `scripts/11_movies_classification.zsh` through `scripts/15_documents_classification.zsh` plus their `classification/<Target>/` output directories. No engine changes — `run_classification_task` was already parameterized for all 6 local targets in D10.
+- **Verified (scratch, per corrected R9 method):** all 5 validated cleanly against real inventory data, 0 warnings, 0 errors — Movies 98 records, Desktop 312, Music 473, Pictures 17,323, Documents 463,774 (128k-file target, 6s generation time).
+- **Observed, not acted on:** Documents' review queue (132,279 records) is large — mostly duplicate-risk noise at scale, flagged for a follow-up triage-strategy discussion. Pictures' Photos Library package wasn't pruned by the inventory engine's `.photo\ library` pattern (misses the modern `.photoslibrary` extension) — an inventory-phase (D2) gap, not a classification bug, not fixed here.
+- **All 5 confirmed on first run, no incidents.** Movies `CLS-20260802-160123` (98), Desktop `CLS-20260802-160130` (312), Music `CLS-20260802-160137` (473), Pictures `CLS-20260802-160143` (17,323), Documents `CLS-20260802-160151` (463,774) — every count matched the sandbox-verified table exactly. Independently confirmed CSV/JSON row-count parity and single consistent ClassificationID for all 5; no leftover lock/staging artifacts.
+
 ## 2026-08-02 (classification pipeline — Downloads dry run)
 
 - **Decided:** operator finalized the three open policy questions from `CLASSIFICATION_DESIGN.md` §7 — target-specific staleness thresholds (Downloads 30/90/180d; Documents/Desktop 180/365/730d; Pictures/Movies/Music none), duplicate-risk stays within-target only, package directories excluded by default. See `DECISIONS.md` D10.

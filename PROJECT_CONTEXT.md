@@ -24,7 +24,7 @@ Source: `reports/01_environment_baseline.txt`. No version control is in use — 
 
 Inventory is closed for 7 of 8 configured targets: Documents (Task 03), Desktop (Task 04), Downloads (Task 05), Pictures (Task 06), Movies (Task 07), Music (Task 08), CloudStorage (Task 09). Volumes was explicitly declined by the operator and is not scheduled.
 
-The classification pipeline (`scripts/lib/classification_engine.zsh`, `scripts/10_downloads_classification.zsh`) is built for Downloads and logic-verified against real data (`DECISIONS.md` D9/D10): 161 records from Downloads' 53 files, 127 High / 0 Medium / 34 Low confidence, 0 warnings, 0 errors. Not yet run as the operator's own official artifact — two stray directories from sandbox verification need manual removal first (`RUNBOOK.md`).
+The classification pipeline (`scripts/lib/classification_engine.zsh`) covers all 6 local targets, all closed and validated (Tasks 10-15, `DECISIONS.md` D10/D11): Downloads (161 records), Movies (98), Desktop (312), Music (473), Pictures (17,323), Documents (463,774). Every run's CSV/JSON row-count parity and single-ClassificationID consistency was independently confirmed; 0 warnings, 0 errors across all 6. Two observations are open for a future conversation, not yet acted on: Documents' review queue is large (132k records, mostly duplicate-risk noise) and needs a triage-strategy discussion; Pictures' Photos Library wasn't pruned as a package by the inventory engine (D2 gap).
 
 Scripts 03-08 were refactored from six hand-cloned files into thin wrappers over a shared `scripts/lib/inventory_engine.zsh` (`DECISIONS.md` D7). Fully verified: all 6 targets rerun clean, one cleanup-trap scoping bug found and fixed along the way, no leftover artifacts anywhere on the final pass.
 

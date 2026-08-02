@@ -4,6 +4,41 @@ Architecture decision log. Newest first. Each entry: context, decision, conseque
 
 ---
 
+## D11 — Classification extended to the remaining 5 local targets (2026-08-02)
+
+**Context.** Operator reviewed the Downloads dry run (Task 10, committed `ab0a51f`) and gave a clean "go ahead" to proceed. `CLASSIFICATION_DESIGN.md` §6 step 5 allowed moving straight to a parameterized rollout, rather than repeating D7's clone-first-then-refactor cycle, if the dry run gave enough confidence — it did (exact match between sandbox-verified and operator-run numbers), and unlike inventory's original per-target scripts, `run_classification_task` was already built parameterized from the start (D10), so no engine change was needed for the remaining targets.
+
+**Decision.** Added five thin wrappers: `scripts/11_movies_classification.zsh`, `12_desktop_classification.zsh`, `13_music_classification.zsh`, `14_pictures_classification.zsh`, `15_documents_classification.zsh`, plus their `classification/<Target>/` output directories. Task numbers assigned in ascending size order (Movies 49 files → Documents 128,380) as a cheap-first safety sequence, though it turned out not to matter — nothing failed at any scale.
+
+**Verification performed (scratch, per R9/D10's corrected method — no lock/staging created inside the mounted repo).** The exact generation and validation Python bodies were extracted directly from the committed `scripts/lib/classification_engine.zsh` (not retyped, to rule out transcription drift) and run against each target's real, already-published `inventory/<Target>/metadata.csv` from `/tmp`. All five validated cleanly, 0 warnings, 0 errors:
+
+| Target | Records | High | Medium | Low | Review queue | Gen time |
+|---|---|---|---|---|---|---|
+| Movies | 98 | 49 | 0 | 49 | 49 | <1s |
+| Desktop | 312 | 265 | 5 | 42 | 47 | <1s |
+| Music | 473 | 163 | 13 | 297 | 310 | <1s |
+| Pictures | 17,323 | 11,386 | 2 | 5,935 | 5,937 | <1s |
+| Documents | 463,774 | 331,495 | 42,321 | 89,958 | 132,279 | 6s |
+
+**Two observations surfaced, neither acted on without further discussion:**
+
+1. **Documents' review queue (132,279 records) is large relative to what a human can practically triage.** The dominant driver is `duplicate-risk: possible-duplicate-candidate` (42,321, Medium) and `same-name-different-size` (27,316, Low) — at 128k+ files, mostly inside a single large source-code workspace (`GitHub`, 127,699 project-grouping records), exact-size collisions between unrelated small files are common and mostly noise, not real duplicates. This is the heuristic working as designed (R8: name+size is a candidate signal, not proof) but at a scale where "requires human review" needs a follow-up conversation about triage strategy — e.g. surfacing only the largest-by-size candidates first — before Documents' review queue is treated as an actionable list. Not fixed here; flagged for the next conversation about this data.
+2. **Pictures' `workspace:Photos Library.photoslibrary` grouping has 8,643 entries** — larger than expected for a "package" the inventory engine was supposed to prune. Checking `is_package_path()` in `scripts/lib/inventory_engine.zsh` (D2) confirms the prune pattern matches `*.photo\ library` (with a space, an older bundle naming convention) but not `*.photoslibrary` (the actual modern Photos Library package extension, no space) — so Pictures' inventory scan descended into and fully catalogued the library's internals rather than recording it as one opaque package entry. This is an **inventory-phase gap** (D2's prune list), not a classification bug — classification correctly reported what the inventory recorded. Fixing it would mean amending the prune pattern and re-running Pictures' inventory (Task 06), which is out of scope for this classification-phase decision and needs separate discussion, not a silent fix.
+
+**Status.** Fully verified (2026-08-02). Operator ran all 5 wrappers; every count matched the pre-verified table exactly:
+
+| Target | Classification ID | Records | High/Medium/Low |
+|---|---|---|---|
+| Movies | `CLS-20260802-160123` | 98 | 49/0/49 |
+| Desktop | `CLS-20260802-160130` | 312 | 265/5/42 |
+| Music | `CLS-20260802-160137` | 473 | 163/13/297 |
+| Pictures | `CLS-20260802-160143` | 17,323 | 11,386/2/5,935 |
+| Documents | `CLS-20260802-160151` | 463,774 | 331,495/42,321/89,958 |
+
+Independently confirmed: CSV/JSON row-count parity and a single consistent ClassificationID for all 5, no leftover lock or staging artifacts anywhere. All 6 local targets now have committed classification proposals under the same pipeline.
+
+---
+
 ## D10 — Classification pipeline built for Downloads; policy defaults finalized; sandbox-verification method changed (2026-08-02)
 
 **Context.** Operator approved `CLASSIFICATION_DESIGN.md` with three policy defaults for the open questions in its §7: (1) target-specific staleness thresholds — Downloads 30/90/180 days, Documents/Desktop 180/365/730 days, Pictures/Movies/Music no staleness dimension; (2) duplicate-risk comparison stays within each target only, never across targets, for this phase; (3) package directories excluded from classification output by default. Operator directed the first safe execution: build the pipeline and dry-run Downloads only, reading only `inventory/Downloads/metadata.csv`, no filesystem rescan, no mutation, output confined to `classification/Downloads/` and `reports/`.

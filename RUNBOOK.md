@@ -170,6 +170,44 @@ print('classification id:', records[0]['ClassificationID'] if records else 'N/A'
 "
 ```
 
+## Running classification for the remaining local targets (Tasks 11-15)
+
+Approved 2026-08-02 (`DECISIONS.md` D11). Same guarantees as Task 10: read-only, reads only each target's `inventory/<Target>/metadata.csv`, never rescans the filesystem, no file mutation at any confidence tier.
+
+```
+./scripts/11_movies_classification.zsh
+./scripts/12_desktop_classification.zsh
+./scripts/13_music_classification.zsh
+./scripts/14_pictures_classification.zsh
+./scripts/15_documents_classification.zsh
+```
+
+Documents is the large one (128,380 files) — expect the generation step to take several seconds, not instant like the others. Logic was already verified against this exact data from a sandbox scratch location; your run's counts should match:
+
+| Target | Records | High | Medium | Low |
+|---|---|---|---|---|
+| Movies | 98 | 49 | 0 | 49 |
+| Desktop | 312 | 265 | 5 | 42 |
+| Music | 473 | 163 | 13 | 297 |
+| Pictures | 17,323 | 11,386 | 2 | 5,935 |
+| Documents | 463,774 | 331,495 | 42,321 | 89,958 |
+
+Validate any of them the same way as Downloads, substituting the target name:
+
+```
+python3 -c "
+import json, csv
+target = 'Documents'  # change per target
+with open(f'classification/{target}/classification_proposal.json') as f:
+    records = json.load(f)
+with open(f'classification/{target}/classification_proposal.csv', newline='') as f:
+    rows = list(csv.DictReader(f))
+print('json records:', len(records))
+print('csv rows:', len(rows))
+print('row count match:', len(records) == len(rows))
+"
+```
+
 ## Adding a new inventory target
 
 1. Confirm the target name and path already exist in `config/inventory_targets.yaml` and `inventory/<Target>/` exists (both are already true for all 8 configured targets).
