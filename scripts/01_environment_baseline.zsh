@@ -5,11 +5,28 @@ set -euo pipefail
 
 PROJECT_DIR='/Users/eduardofgiovannini/Documents/GitHub/LifeOS-Organizer'
 REPORT_PATH="$PROJECT_DIR/reports/01_environment_baseline.txt"
+LOCK_DIR="$PROJECT_DIR/logs/.task01.lock"
 
 if [[ "$(/bin/pwd -P)" != "$PROJECT_DIR" ]]; then
   print -u2 -- "ERROR: Run this script from $PROJECT_DIR"
   exit 1
 fi
+
+# Execution lock (mirrors scripts/03_documents_inventory.zsh, added after the
+# 2026-08-02 concurrency incident — see DECISIONS.md D5). mkdir is atomic; a
+# stale lock (holder PID no longer alive) is reclaimed automatically.
+if ! /bin/mkdir "$LOCK_DIR" 2>/dev/null; then
+  holder_pid=''
+  [[ -f "$LOCK_DIR/pid" ]] && holder_pid="$(<"$LOCK_DIR/pid")"
+  if [[ -n "$holder_pid" ]] && /bin/kill -0 "$holder_pid" 2>/dev/null; then
+    print -u2 -- "ERROR: Another Task 01 run (PID $holder_pid) holds the execution lock ($LOCK_DIR)."
+    exit 1
+  fi
+  /bin/rm -rf "$LOCK_DIR"
+  /bin/mkdir "$LOCK_DIR" || { print -u2 -- 'ERROR: Cannot acquire execution lock.'; exit 1; }
+fi
+print -- "$$" > "$LOCK_DIR/pid"
+trap '/bin/rm -rf "$LOCK_DIR"' EXIT HUP INT TERM
 
 print_section() {
   print

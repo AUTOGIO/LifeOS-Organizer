@@ -4,6 +4,18 @@ Architecture decision log. Newest first. Each entry: context, decision, conseque
 
 ---
 
+## D6 — Execution lock extended to Tasks 01 and 02 (2026-08-02)
+
+**Context.** D5 added an execution lock only to `03_documents_inventory.zsh`, the script actually involved in the concurrency incident. `RISK_REGISTER.md` (R1) flagged the same unlocked-concurrent-invocation risk as latent in `01_environment_baseline.zsh` and `02_inventory_engine.zsh` — lower likelihood today (both are fast, interactive, rarely rerun mid-flight) but the same bug class.
+
+**Decision.** Apply the identical mkdir-lock pattern (`logs/.task01.lock`, `logs/.task02.lock`) to both scripts, unchanged in mechanics from D5. Did not add staged-publish/validation to either script — both still write their report directly via `exec > "$REPORT_PATH"`. That remains a separate, lower-priority gap (`QUALITY_GATES.md`), acceptable because a single small text file has no partial-write risk comparable to a 100k-row CSV/JSON pair.
+
+**Consequences.** Neither script can now be run twice concurrently; a second invocation fails fast with a named holder PID instead of silently interleaving output.
+
+**Status.** Implemented in `scripts/01_environment_baseline.zsh` and `scripts/02_inventory_engine.zsh`. Not syntax-checked with `zsh -n` in this environment (no zsh available here) — same caveat as D4/D5, see `RISK_REGISTER.md` R6.
+
+---
+
 ## D5 — Execution lock via `mkdir`, not `flock` (2026-08-02)
 
 **Context.** Task 02.5 found 9 stale, non-completing Task 03 process trees, traced to repeated manual invocation with no mechanism to prevent concurrent runs. This directly caused corruption of `metadata.csv` / `metadata.json`.

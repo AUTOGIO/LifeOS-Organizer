@@ -7,7 +7,9 @@ No version tags — this project has no releases yet, only dated task entries. N
 - **Fixed:** `scripts/03_documents_inventory.zsh` had no execution lock, allowing concurrent invocations to race on shared output paths. Added an `mkdir`-based lock (`logs/.task03.lock`) with stale-PID reclaim. See `DECISIONS.md` D5.
 - **Fixed:** Inventory ID format (`INV-<date>-001`) had no per-run uniqueness; two same-day completed runs collided on an identical ID. Widened the sequence field to `HHMMSS` and updated the embedded validation regex accordingly. See `DECISIONS.md` D4.
 - **Added:** Full documentation set — `PROJECT_CONTEXT.md`, `README.md`, `PROJECT_CHARTER.md`, `EXECUTIVE_REPORT.md`, `SYSTEM_ARCHITECTURE.md`, `ROADMAP.md`, `AI_COLLABORATION.md`, `DECISIONS.md`, `RUNBOOK.md`, `QUALITY_GATES.md`, `RISK_REGISTER.md`, this file.
-- **Known issue, not yet closed:** the corrupted `inventory/Documents/metadata.csv` / `metadata.json` artifacts from the concurrency incident (below) are still on disk as of this entry. Operator must terminate the stale processes and run one clean pass; see `RUNBOOK.md`.
+- **Added:** Extended the same execution-lock pattern to `scripts/01_environment_baseline.zsh` and `scripts/02_inventory_engine.zsh` (`logs/.task01.lock`, `logs/.task02.lock`). See `DECISIONS.md` D6.
+- **Added:** `git init` — this repository now has version control. Initial commit captures the full pre-fix and post-fix state in one snapshot (26 files); history from here forward is incremental.
+- **Known issue, not yet closed:** the corrupted `inventory/Documents/metadata.csv` / `metadata.json` artifacts from the concurrency incident (below) are still on disk as of this entry. Operator must terminate the stale processes and run one clean pass; see `RUNBOOK.md`. This step requires an interactive terminal session on the operator's Mac and cannot be executed remotely.
 
 ## 2026-08-01
 

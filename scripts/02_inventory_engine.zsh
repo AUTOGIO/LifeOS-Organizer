@@ -34,6 +34,7 @@ PROJECT_DIR='/Users/eduardofgiovannini/Documents/GitHub/LifeOS-Organizer'
 CONFIG_PATH="$PROJECT_DIR/config/inventory_targets.yaml"
 TEMPLATE_PATH="$PROJECT_DIR/templates/inventory_report_template.md"
 REPORT_PATH="$PROJECT_DIR/reports/02_inventory_engine.txt"
+LOCK_DIR="$PROJECT_DIR/logs/.task02.lock"
 EXPECTED_TARGETS=(Documents Desktop Downloads Pictures Movies Music CloudStorage Volumes)
 REQUIRED_PROJECT_DIRS=(docs scripts reports plans logs inventory templates config)
 
@@ -94,6 +95,22 @@ if [[ "$(/bin/pwd -P)" != "$PROJECT_DIR" ]]; then
   print -u2 -- "ERROR: Run this script from $PROJECT_DIR"
   exit 1
 fi
+
+# Execution lock (mirrors scripts/03_documents_inventory.zsh, added after the
+# 2026-08-02 concurrency incident — see DECISIONS.md D5). mkdir is atomic; a
+# stale lock (holder PID no longer alive) is reclaimed automatically.
+if ! /bin/mkdir "$LOCK_DIR" 2>/dev/null; then
+  holder_pid=''
+  [[ -f "$LOCK_DIR/pid" ]] && holder_pid="$(<"$LOCK_DIR/pid")"
+  if [[ -n "$holder_pid" ]] && /bin/kill -0 "$holder_pid" 2>/dev/null; then
+    print -u2 -- "ERROR: Another Task 02 run (PID $holder_pid) holds the execution lock ($LOCK_DIR)."
+    exit 1
+  fi
+  /bin/rm -rf "$LOCK_DIR"
+  /bin/mkdir "$LOCK_DIR" || { print -u2 -- 'ERROR: Cannot acquire execution lock.'; exit 1; }
+fi
+print -- "$$" > "$LOCK_DIR/pid"
+trap '/bin/rm -rf "$LOCK_DIR"' EXIT HUP INT TERM
 
 exec > "$REPORT_PATH" 2>&1
 print_header

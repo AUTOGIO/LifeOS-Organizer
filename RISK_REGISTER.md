@@ -12,7 +12,7 @@ Format: risk, evidence, impact, status, mitigation.
 
 **Status.** Mitigated 2026-08-02 — execution lock added (`DECISIONS.md`, D5). **Not yet closed operationally**: the stale processes identified in Task 02.5 must still be terminated and a clean rerun completed on the Mac (`RUNBOOK.md`).
 
-**Mitigation.** Execution lock in `03_documents_inventory.zsh`. Recommended follow-up: extend the same lock pattern to `01_environment_baseline.zsh` and `02_inventory_engine.zsh` if they are ever run from automation rather than an interactive terminal.
+**Mitigation.** Execution lock in `03_documents_inventory.zsh`. Extended to `01_environment_baseline.zsh` and `02_inventory_engine.zsh` the same day (`DECISIONS.md` D6) — all three task scripts now refuse concurrent invocation.
 
 ---
 
@@ -30,13 +30,13 @@ Format: risk, evidence, impact, status, mitigation.
 
 ## R3 — No version control
 
-**Evidence.** The project directory is not a git repository. Confirmed directly (`git log` / `git status` fail with "not a git repository").
+**Evidence.** The project directory was not a git repository as of 2026-08-01 (`git log` / `git status` failed with "not a git repository").
 
-**Impact.** Medium and growing. Every "current state" claim in this documentation set depends entirely on the live files on disk with no history, no diff review, and no way to recover a previous version of a script or config file if it's overwritten incorrectly.
+**Impact.** Medium. Prior to mitigation, every "current state" claim in this documentation set depended entirely on live files on disk with no history and no way to recover a previous version of a script or config file if overwritten incorrectly.
 
-**Status.** Open.
+**Status.** Mitigated 2026-08-02 — `git init` run, initial commit captures the full documented state (26 files). Generated inventory data (`inventory/*/metadata.csv`, `inventory/*/metadata.json`) and logs are excluded via `.gitignore` — those are regenerated, not source.
 
-**Mitigation.** None applied yet. Recommended before the next scripting phase: `git init`, commit current state, and adopt commits as the record of change instead of relying on file mtimes and debug logs.
+**Mitigation.** Adopt commits as the record of change going forward. Recommended discipline: commit after every task run and after every script change, with a message that matches the corresponding `CHANGELOG.md` entry.
 
 ---
 
