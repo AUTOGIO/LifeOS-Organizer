@@ -2,6 +2,13 @@
 
 No version tags — this project has no releases yet, only dated task entries. Newest first.
 
+## 2026-08-03 (D21 — CompilationCache largest-first quarantine, kept)
+
+- **Engine:** `--order largest|smallest`, `--match SUBSTR`, skip already-applied/missing paths, archive ledgers under `remediation/Documents/ledgers/`.
+- **Executed:** dry-run then apply `REM-20260803-005600` — 11 multi-GB `CompilationCache.noindex` files, 146,028,888,064 bytes, 11/0. Spot-check clean; kept quarantined.
+- **Note:** same-volume quarantine reorganizes only; disk still ~94% until a separately approved purge.
+- **Remaining:** 25 other CompilationCache.noindex files + rest of Batch 1 need a new DECISIONS entry.
+
 ## 2026-08-03 (D20 — mid-size Batch 1 quarantine, --limit 100, kept)
 
 - **Decided:** operator approved dry-run → apply → spot-check → keep if clean for 100 smallest Batch 1 files (`DECISIONS.md` D20).

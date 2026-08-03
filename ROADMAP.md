@@ -4,12 +4,13 @@ Format: Now / Next / Later. Nothing moves left until the item to its left is clo
 
 ## Now
 
-- D20 mid-size Batch 1 quarantine complete and kept (`REM-20260803-004958`, 100 files). Decide whether to authorize multi-GB CompilationCache quarantine (new DECISIONS entry).
+- D21 CompilationCache multi-GB quarantine complete and kept (`REM-20260803-005600`, 11 files / ~146 GB moved within volume). Decide on remaining Batch 1 / CompilationCache files, and separately whether to approve purge of quarantine to free disk.
 
 ## Next
 
-- Optional larger Batch 1 applies (e.g. 500 / full remaining Batch 1) with a new `DECISIONS.md` approval.
-- Optional R10 large-but-nonzero drop gate (still open in `RISK_REGISTER.md`).
+- Optional remaining CompilationCache / Batch 1 applies with a new `DECISIONS.md` approval.
+- Optional approved quarantine purge (only path that frees disk; still no silent deletion).
+- Optional R10 large-but-nonzero drop gate.
 
 ## Later
 
