@@ -26,20 +26,28 @@ These principles are non-negotiable ordering constraints, not preferences. A tas
 
 ## Scope
 
-In scope for the current project phase:
+In scope for the inventory and classification phases (completed per `DECISIONS.md` D7–D15):
 
-- Metadata-only inventory of the eight configured targets (`config/inventory_targets.yaml`): Documents, Desktop, Downloads, Pictures, Movies, Music, CloudStorage, Volumes.
+- Metadata-only inventory of the seven operator-approved targets (`config/inventory_targets.yaml`): Documents, Desktop, Downloads, Pictures, Movies, Music, CloudStorage.
+- Metadata-only classification of the six local targets (Documents, Desktop, Downloads, Pictures, Movies, Music) — CloudStorage and Volumes excluded from classification (`DECISIONS.md` D9–D11).
+- Documents classification triage into prioritized review batches (`DECISIONS.md` D12).
 - A shared, versioned report format (`templates/inventory_report_template.md`).
-- Deterministic, single-instance, auditable inventory scripts.
+- Deterministic, single-instance, auditable inventory and classification scripts.
 - Documentation of architecture, decisions, risks, and operating procedure.
 
-Out of scope for the current phase:
+In scope for the remediation phase (design and pilot per `REMEDIATION_DESIGN.md`, once approved):
 
-- Any file move, rename, copy, or delete.
-- Document content inspection, OCR, hashing, or duplicate detection.
-- AI classification of collected metadata.
+- Dry-run-by-default move-to-quarantine proposals with a rollback ledger.
+- Explicit `--apply` gated by a `DECISIONS.md` approval entry.
+- No deletion capability at any point (`docs/SAFETY_RULES.md` rule 5 — permanent).
+
+Out of scope (permanent or deferred by operator decision):
+
+- Volumes inventory — permanently out of scope by explicit operator decision 2026-08-02 (`DECISIONS.md` D8); not pending.
+- Document content inspection, OCR, hashing, or confirmed duplicate detection (name+size is a heuristic only — `RISK_REGISTER.md` R8).
 - Automated cleanup of Downloads or Desktop (explicitly excluded — see `docs/SAFETY_RULES.md`).
-- External disks and cloud-backed folders (require separate approval before inventory, and again before any later remediation).
+- Any file deletion during this project.
+- External disks beyond the approved CloudStorage inventory (require separate approval before any later remediation).
 
 ## Non-goals
 
@@ -47,12 +55,20 @@ Out of scope for the current phase:
 - It does not aim to run unattended or headless; every task is explicitly invoked from a terminal session on the target Mac.
 - It does not aim to support platforms other than macOS on Apple Silicon.
 
-## Success criteria for the current phase
+## Success criteria
 
-- All eight configured targets have a completed, validated metadata inventory (CSV + JSON + summary + report), each traceable to a unique Inventory ID.
-- No inventory run has modified, moved, renamed, deleted, copied, or opened a user file for content inspection.
-- Every inventory artifact passes the built-in validation gate (row-count parity between CSV and JSON, consistent Inventory ID) before publication.
+**Inventory + classification (met):**
+
+- All seven operator-approved targets have a completed, validated metadata inventory (CSV + JSON + summary + report), each traceable to a unique Inventory ID. (Volumes permanently declined — not a defect.)
+- All six in-scope local targets have a validated classification proposal traceable to its SourceInventoryID.
+- No inventory or classification run has modified, moved, renamed, deleted, copied, or opened a user file for content inspection.
+- Every published artifact passes the built-in validation gate (row-count parity, consistent IDs; inventory also refuses zero-directory results — `DECISIONS.md` D15) before publication.
 - A complete, current set of governance and operational documentation exists in the repository.
+
+**Remediation (in progress):**
+
+- An approved remediation design exists with dry-run default, `--apply` gate, and rollback ledger.
+- A limited pilot batch can be applied and deterministically rolled back with zero unintended file changes.
 
 ## Sponsor / operator
 

@@ -9,6 +9,8 @@ This project has been built and modified by more than one AI system, under human
 | 2026-08-01 | Codex (generated), ChatGPT (reviewed) | Tasks 01–03: environment baseline, inventory engine, Documents inventory script |
 | 2026-08-02 | Claude (Cowork) | Task 02.5-driven remediation: execution lock and Inventory ID fix in `03_documents_inventory.zsh`; this documentation set |
 | 2026-08-02 | Claude (Cowork) | D7 shared-engine refactor; D8 CloudStorage safe-mode inventory (Task 09); D9 classification design (`CLASSIFICATION_DESIGN.md`), design-only, no code run |
+| 2026-08-02 | Claude (Cowork) | D10–D11 classification pipeline for all 6 local targets; D12 Documents triage; D13–D14 package-recording fix; D15 R10 zero-result guard |
+| 2026-08-02 | Cursor (Composer) | Independent progress audit; Charter/Executive/AI/Roadmap currency; pipeline hardening; remediation design and dry-run pilot |
 
 Multiple AI systems working on the same codebase over time is expected and supported, provided every change follows the rules below regardless of which system makes it.
 
@@ -25,4 +27,4 @@ Multiple AI systems working on the same codebase over time is expected and suppo
 
 ## What "AI-ready" means for this project
 
-Per `PROJECT_CHARTER.md`, AI classification of collected metadata is a later phase, not yet started. "AI-ready" currently means: the metadata schema is stable and documented (`SYSTEM_ARCHITECTURE.md`), and the audit trail (Inventory ID per run) is unique and traceable — a precondition for any future classification step to be reproducible and reviewable.
+Classification of collected metadata is implemented for the six local targets (`DECISIONS.md` D9–D11). "AI-ready" now means: inventory and classification schemas are stable and documented, every proposal is traceable via InventoryID → ClassificationID → TriageID, and any future remediation requires a separate approved design with dry-run default and a rollback ledger (`REMEDIATION_DESIGN.md`).

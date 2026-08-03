@@ -70,9 +70,9 @@ Format: risk, evidence, impact, status, mitigation.
 
 **Impact.** Low-medium. A silent zsh syntax error would only surface the next time the script is actually run on the Mac, not before.
 
-**Status.** Open until the operator runs the script and confirms it executes cleanly.
+**Status.** Closed 2026-08-02. Operator and subsequent AI-assisted sessions have run Tasks 03–16 cleanly across all approved targets (D7–D15). The original locking/ID fix and all later shared-engine changes have executed successfully on the target Mac.
 
-**Mitigation.** Manual read-through of both edited regions was performed. Recommended: run `zsh -n scripts/03_documents_inventory.zsh` on the Mac before or as part of the next execution.
+**Mitigation.** Manual read-through plus repeated real runs. Going forward: prefer `zsh -n` on changed scripts before first live run; verify pipeline logic against `/tmp` scratch when sandbox-constrained (`RISK_REGISTER.md` R9).
 
 ---
 
@@ -120,8 +120,8 @@ Format: risk, evidence, impact, status, mitigation.
 
 **Impact.** Medium. The gate's checks (row-count parity, ID consistency, ID format) are necessary but not sufficient — they can't distinguish "a small target really does have 0 files" from "the scan silently failed and produced nothing." A target going from N files to 0 between consecutive runs is exactly the kind of result that should raise a flag before publishing, and today it doesn't.
 
-**Status.** Open, documented. No fix implemented — flagged for a future quality-gate enhancement, not addressed as part of D14 (out of scope for "minimal, targeted correction").
+**Status.** Partially mitigated, 2026-08-02 (`DECISIONS.md` D15). The specific failure mode that caused the D14 incident — a scan producing zero directory entries, including the root — is now caught: `run_inventory_task` refuses to publish and leaves the previous good artifact untouched. Logic-verified in isolation; not yet exercised against a real target run.
 
-**Mitigation today.** None automated. The practical safety net that caught this was the operator's own explicit validation checklist (this project's established discipline of checking real output after every run, `RUNBOOK.md`), not the pipeline itself. No user file was at risk either way — only the project's own regenerable inventory artifact was affected, and it self-corrected on the next successful run.
+**Mitigation today.** `total_directories == 0` guard in `scripts/lib/inventory_engine.zsh`, bypassable only via explicit `ALLOW_EMPTY_RESULT=1`. This does not cover the broader case below (a large but nonzero silent drop) — that remains open.
 
 **Suggested future gate (not implemented):** compare the new run's file/directory count against the previous published run's; require explicit confirmation (or a `--force` flag) if the new count drops by some large factor (e.g. >90%) with no corresponding warning/error explaining why.

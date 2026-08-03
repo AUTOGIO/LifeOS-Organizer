@@ -382,6 +382,26 @@ run_inventory_task() {
   local END_EPOCH=$(/bin/date +%s)
   local RUNTIME=$(( END_EPOCH - START_EPOCH ))
 
+  # R10 guard (DECISIONS.md D15): a scan that produced zero directory
+  # entries is always anomalous, never a legitimate empty-folder result.
+  # The target root itself ($TARGET_PATH) is always emitted as one
+  # directory entry by a correctly functioning scan, even when the folder
+  # has no contents at all — so total_directories==0 can only happen if the
+  # scan command itself failed silently (exactly what caused the D14
+  # incident: a broken `find` invocation produced no output, but the script
+  # had no `set -e`, so it published an empty-but-internally-consistent
+  # result anyway). Checking total_files instead would be the wrong signal
+  # — a genuinely empty folder legitimately has 0 files — so this checks
+  # total_directories specifically, which cannot be 0 for any successful
+  # scan of an existing path. ALLOW_EMPTY_RESULT=1 bypasses this guard
+  # explicitly, for the operator to use if a future edge case genuinely
+  # needs it; it is never assumed by default.
+  if (( total_directories == 0 )) && [[ "${ALLOW_EMPTY_RESULT:-0}" != '1' ]]; then
+    print -u2 -- "ERROR: Scan of $TARGET_NAME produced zero directory entries, including the target root itself. A correctly functioning scan always records at least the root directory, even for an empty folder. This almost always means the scan command failed silently (check for a 'find:' error above this line). Refusing to publish; the previous good artifact (if any) is untouched."
+    print -u2 -- "Recovery: fix the underlying cause (see DECISIONS.md D14/D15, RISK_REGISTER.md R10), then rerun. If this target is a genuine, confirmed edge case that legitimately produces zero directory entries, rerun with ALLOW_EMPTY_RESULT=1 to bypass this guard explicitly."
+    return 1
+  fi
+
   local -i vanished_count=0
   if [[ "$SAFE_MODE" == '1' ]]; then
     vanished_count=$(( expected_entry_count - (total_files + total_directories) ))

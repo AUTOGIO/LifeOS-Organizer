@@ -22,15 +22,9 @@ Source: `reports/01_environment_baseline.txt`. No version control is in use — 
 
 ## Current phase
 
-Inventory is closed for 7 of 8 configured targets: Documents (Task 03), Desktop (Task 04), Downloads (Task 05), Pictures (Task 06), Movies (Task 07), Music (Task 08), CloudStorage (Task 09). Volumes was explicitly declined by the operator and is not scheduled.
+Inventory and classification are closed for all operator-approved scope. Volumes is permanently out of scope (`DECISIONS.md` D8). Pictures package recording (D14) and the R10 zero-result guard (D15) are committed. Documents triage (D12) is published under `review/Documents/`.
 
-The classification pipeline (`scripts/lib/classification_engine.zsh`) covers all 6 local targets, all closed and validated (Tasks 10-15, `DECISIONS.md` D10/D11): Downloads (161 records), Movies (98), Desktop (312), Music (473), Pictures (17,323), Documents (463,774).
-
-Two items are built and awaiting operator's final review before a single commit: a Documents classification triage (`review/Documents/`, Task 16, `DECISIONS.md` D12) sorting its 128,380 files into 5 prioritized batches, and the Pictures package-recording fix (`DECISIONS.md` D13/D14) — implemented, tested, and re-verified end-to-end: Pictures inventory now correctly records `Photos Library.photoslibrary` as one `IsPackage=true` row (`INV-20260802-202531`, 13 files, 6 directories) instead of 8,964 individually-inventoried internal rows, and Pictures classification (`CLS-20260802-202619`, 28 records) is confirmed traceable to the corrected inventory. A new `RISK_REGISTER.md` R10 documents a validation-gate gap (doesn't catch a scan silently producing 0 results) found while fixing D14 — not fixed, deliberately out of scope for a minimal correction.
-
-Scripts 03-08 were refactored from six hand-cloned files into thin wrappers over a shared `scripts/lib/inventory_engine.zsh` (`DECISIONS.md` D7). Fully verified: all 6 targets rerun clean, one cleanup-trap scoping bug found and fixed along the way, no leftover artifacts anywhere on the final pass.
-
-CloudStorage (Task 09) is done and validated: a `SAFE_MODE` flag on `run_inventory_task` forced Spotlight off and tracked vanish-mid-scan entries, with zero behavior change to the six existing targets (`DECISIONS.md` D8). Inventory ID `INV-20260802-144307`: 22,833 files, 1,779 directories, 86,341,869,509 bytes, 0 errors, 24,612 CSV/JSON records confirmed matching, 0 vanished mid-scan. Volumes was explicitly declined by the operator and is not scheduled. Seven of 8 configured targets are now complete.
+Active work: pipeline hardening (plausibility guards on classification/triage), repo hygiene (`.gitignore` for generated classification/review data), then remediation design and a dry-run → limited-apply → rollback pilot on Documents Batch 1. See `ROADMAP.md`.
 
 ## Work completed
 
@@ -48,9 +42,8 @@ CloudStorage (Task 09) is done and validated: a `SAFE_MODE` flag on `run_invento
 ## What this project intentionally does not do yet
 
 - No document content is opened, parsed, OCR'd, hashed, or summarized.
-- No file has been moved, renamed, copied, or deleted by any script.
-- No classification code has been written or run against collected metadata — `CLASSIFICATION_DESIGN.md` is a design and proposal document only, awaiting approval.
-- No remediation or reorganization proposal exists yet.
+- No user file has been moved, renamed, copied, or deleted by any script (remediation dry-run/apply is the next gated phase).
+- No deletion capability will be added during this project (`docs/SAFETY_RULES.md` rule 5).
 
 ## Governing documents
 

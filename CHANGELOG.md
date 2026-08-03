@@ -2,6 +2,20 @@
 
 No version tags — this project has no releases yet, only dated task entries. Newest first.
 
+## 2026-08-02 (Charter closeout Phase 1 — D15 commit + doc currency)
+
+- **Committed:** R10 zero-result guard (D15) in `scripts/lib/inventory_engine.zsh` plus matching `DECISIONS.md` / `RISK_REGISTER.md` / `QUALITY_GATES.md` updates.
+- **Updated:** `PROJECT_CHARTER.md` (classification in scope; 7-target success; Volumes permanently out of scope), `EXECUTIVE_REPORT.md` (Tasks 10–16 + D14/D15), `AI_COLLABORATION.md` (history through D15), `ROADMAP.md` (Phases 2–5).
+- **Closed:** `RISK_REGISTER.md` R6 (clean runs confirmed across Tasks 03–16).
+- **Removed:** stray `logs/03_documents_inventory_debug.log` (~5.1 GB) from pre-lock Task 03 incident.
+- **Added:** `LifeOS_Organizer_Progress_Audit_2026-08-02.md` (independent progress audit).
+
+## 2026-08-02 (R10 zero-result guard — implemented)
+
+- **Added:** a validation guard in `scripts/lib/inventory_engine.zsh` (`run_inventory_task`): if a scan produces zero directory entries — impossible for any correctly functioning scan, since the target root itself is always one — the run aborts before publishing, leaving the previous good artifact untouched. Bypassable only via explicit `ALLOW_EMPTY_RESULT=1`. Closes the specific failure mode from the D14 incident. See `DECISIONS.md` D15.
+- **Verified:** `bash -n` (no new errors; the one pre-existing `<->` zsh-only false positive is unrelated). Branching logic exercised in isolation against fabricated inputs in `/tmp` scratch (5 cases: normal scan, silent-failure zero, genuinely-empty-but-root-present, zero-with-override, zero-with-wrong-override) — all behaved as intended. No real target rescanned.
+- **Updated:** `RISK_REGISTER.md` R10 status, `QUALITY_GATES.md` gap note.
+
 ## 2026-08-02 (Pictures package-recording fix — implemented and verified, NOT committed)
 
 - **Decided:** operator approved a minimal correction so package directories are recorded once (`IsPackage=true`) instead of being silently excluded entirely — the deeper gap D13's proposal exposed. See `DECISIONS.md` D14.

@@ -4,6 +4,22 @@ Architecture decision log. Newest first. Each entry: context, decision, conseque
 
 ---
 
+## D15 — R10 zero-result validation guard added to the shared inventory engine (2026-08-02)
+
+**Context.** Operator directed a narrow follow-up to R10 (the gap D14 exposed and deliberately left unfixed): add the smallest possible validation guard so an unexpectedly zero-result inventory fails clearly instead of publishing misleading output. Explicit scope: shared inventory engine only, plus focused validation and minimum documentation — no rescan of any real target, no new large artifacts, no Documents triage work, no commit.
+
+**Decision.** Added one check to `run_inventory_task` in `scripts/lib/inventory_engine.zsh`, immediately after the scan loop completes and before the safe-mode vanish-count/report-generation steps: if `total_directories == 0`, abort with `return 1` before anything is published, leaving the previous good artifact untouched. `total_directories` (not `total_files`) is the check target, because the target root itself is always recorded as one directory entry by a correctly functioning scan — even a genuinely empty folder yields `total_directories == 1`, `total_files == 0`. So `total_directories == 0` can only happen if the scan command itself failed silently, which is exactly what happened in the D14 incident (`find: ): no beginning '('`, no `set -e`, empty-but-consistent result published anyway). An `ALLOW_EMPTY_RESULT=1` environment override bypasses the guard explicitly, for a future confirmed edge case; it is never assumed by default.
+
+**Verification performed.** `bash -n` on the full library: no new errors — the one pre-existing failure (`<->` numeric glob at line 294, zsh-only syntax, predates this change, part of commit `471e657`) is unrelated and unchanged. `zsh -n` unavailable in this sandbox (same standing caveat as every prior change, `RISK_REGISTER.md` R6). The guard's branching logic was extracted and exercised in isolation against fabricated inputs in a `/tmp` scratch script (per R9's established method — no real target touched, no artifact generated): a normal successful scan (`total_directories=6`) passes; a silently-failed scan (`total_directories=0`, no override) is blocked; a genuinely empty target (`total_directories=1`, `total_files=0`) passes; `total_directories=0` with `ALLOW_EMPTY_RESULT=1` passes (explicit bypass); `total_directories=0` with the override set to anything else still blocks. All five cases behaved as intended.
+
+**Exact failure behavior.** On trigger, two lines are written to stderr — the error (what happened, why, where to look) and a recovery line (fix the root cause and rerun, or set `ALLOW_EMPTY_RESULT=1` to explicitly bypass for a confirmed edge case) — then the function returns 1. Because this fires before the staged CSV/JSON is moved into its final published location, the previous good artifact is never touched; the incomplete staged files are removed by the existing cleanup trap.
+
+**Consequences.** Closes the specific failure mode from the D14 incident (silent `find` failure publishing an empty-but-consistent result) for every target using the shared engine, at the cost of one integer comparison — no new subprocess calls, no new I/O, no measurable runtime impact. Does not address R10's broader suggested future gate (comparing against the previous run's count to catch a large-but-nonzero silent drop) — that remains open and is explicitly out of scope here.
+
+**Status.** Implemented and logic-verified. Not run against any real target in this phase (none were rescanned, per instruction). Not committed — awaiting operator review.
+
+---
+
 ## D14 — Package directories now recorded once, not silently excluded; two bugs found and fixed en route (2026-08-02)
 
 **Context.** D13's proposal was approved with a narrower scope than originally written: not just add `.photoslibrary` to the prune patterns, but fix the deeper gap it exposed — package directories were never being recorded as a single row at all, for any of the 9 patterns, since D2. Operator approved a minimal, targeted correction: emit the matched directory once, then prune, no engine redesign, no classification-rule changes.
