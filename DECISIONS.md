@@ -20,7 +20,7 @@ Architecture decision log. Newest first. Each entry: context, decision, conseque
 
 **Decision.** Authorize one `--apply --limit 5` of the five smallest Documents Batch 1 files, with `LIFEOS_REMEDIATION_APPROVED=D19`, followed immediately by `--rollback` of that RemediationID. No larger apply without a new DECISIONS entry.
 
-**Status.** Authorized for execution in the same session.
+**Status.** Executed: `REM-20260802-231738` applied 5 / failed 0; rollback restored 5 / failed 0. All originals verified present after rollback.
 
 ---
 
