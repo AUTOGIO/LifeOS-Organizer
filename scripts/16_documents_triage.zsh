@@ -324,9 +324,6 @@ with open(out_report, 'w', encoding='utf-8') as f:
     f.write("Safety result: read-only. No file was moved, renamed, tagged, copied, deleted, or modified. "
             "No filesystem rescan occurred.\n")
 
-if False:
-    sys.exit(1)
-
 print(f"Completed {triage_id}: {len(assignments)} files triaged across 5 batches "
       f"({', '.join(str(batch_stats[b]['RecordCount']) for b in range(1,6))}), "
       f"{total_size_all:,} total bytes represented.")
@@ -340,7 +337,7 @@ if (( gen_exit != 0 )); then
 fi
 
 if ! /usr/bin/python3 - "$BATCHES_CSV" "$BATCHES_JSON" "$ASSIGN_CSV" "$ASSIGN_JSON" "$SUMMARY_PATH" "$STAGED_REPORT_PATH" "$TRIAGE_ID" "$CLASSIFICATION_CSV" "$INVENTORY_CSV" <<'PY'
-import csv, json, re, sys
+import csv, json, os, re, sys
 
 (batches_csv, batches_json, assign_csv, assign_json, summary_md, report_path,
  triage_id, classification_csv, inventory_csv) = sys.argv[1:10]
@@ -359,6 +356,19 @@ with open(classification_csv, newline='', encoding='utf-8') as f:
     cls_rows = list(csv.DictReader(f))
 cls_paths = set(r['FullPath'] for r in cls_rows)
 cls_ids = set(r['ClassificationID'] for r in cls_rows)
+
+# R11 plausibility guard (DECISIONS.md D16): refuse empty triage when the
+# source classification has classified file paths. Empty==empty would
+# otherwise pass the set-equality check below.
+allow_empty = os.environ.get('ALLOW_EMPTY_RESULT', '0') == '1'
+if len(cls_paths) > 0 and len(assign_records) == 0 and not allow_empty:
+    raise SystemExit(
+        f"Plausibility guard: source classification has {len(cls_paths)} unique path(s) but "
+        "triage produced 0 assignments. Refusing to publish; previous artifact untouched. "
+        "Rerun after fixing generation, or set ALLOW_EMPTY_RESULT=1 to bypass explicitly."
+    )
+if len(cls_ids) != 1:
+    raise SystemExit(f"Source classification has {len(cls_ids)} ClassificationIDs; expected 1")
 expected_cls_id = next(iter(cls_ids))
 
 with open(inventory_csv, newline='', encoding='utf-8') as f:

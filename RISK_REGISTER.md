@@ -46,10 +46,9 @@ Format: risk, evidence, impact, status, mitigation.
 
 **Impact.** Low to inventory correctness (these are recorded accurately), but relevant to disk capacity (R5) and to any future "what should be reorganized" recommendation — these are almost certainly safe-to-regenerate build caches, not user data, and should be flagged rather than treated as candidates for the same review process as personal documents.
 
-**Status.** Open — informational only. No action taken; this project does not delete or move files.
+**Status.** Partially addressed by Documents triage Batch 1 + remediation pilot (`DECISIONS.md` D12/D18/D19): regeneratable build/cache artifacts can be proposed for quarantine move (not delete). Large-scale Batch 1 quarantine still requires a separate approval beyond the 5-file pilot.
 
-**Mitigation.** None required at this phase. Flag for the eventual classification/remediation phase (`ROADMAP.md`, "Later").
-
+**Mitigation.** Triage + dry-run remediation; limited apply/rollback demonstrated. No deletion.
 ---
 
 ## R5 — Data volume close to capacity
@@ -58,10 +57,9 @@ Format: risk, evidence, impact, status, mitigation.
 
 **Impact.** Medium. Large future inventory artifacts (Documents alone produced a 460 MB JSON file before corruption) and any subsequent AI-classification working data add to a volume already 85% full.
 
-**Status.** Open — informational only.
+**Status.** Improved 2026-08-02 — removed 5.1 GB stray `logs/03_documents_inventory_debug.log`; untracked ~660 MB regenerable classification/review blobs from the index (D17). Disk still tight per baseline; monitor before large CloudStorage re-runs.
 
-**Mitigation.** None required for read-only inventory work. Worth monitoring before any phase that writes larger intermediate artifacts (e.g. content hashing or AI classification caches).
-
+**Mitigation.** Prefer regenerable artifacts on disk only (gitignored). Re-run Task 01 baseline before large new scans.
 ---
 
 ## R6 — Unreviewed AI-authored script change
@@ -125,3 +123,16 @@ Format: risk, evidence, impact, status, mitigation.
 **Mitigation today.** `total_directories == 0` guard in `scripts/lib/inventory_engine.zsh`, bypassable only via explicit `ALLOW_EMPTY_RESULT=1`. This does not cover the broader case below (a large but nonzero silent drop) — that remains open.
 
 **Suggested future gate (not implemented):** compare the new run's file/directory count against the previous published run's; require explicit confirmation (or a `--force` flag) if the new count drops by some large factor (e.g. >90%) with no corresponding warning/error explaining why.
+
+---
+
+## R11 — Classification/triage validators lacked plausibility checks (same class as R10)
+
+**Evidence.** Progress audit 2026-08-02: `classification_engine.zsh` and `16_documents_triage.zsh` validate CSV/JSON parity and ID consistency but would accept an empty-but-consistent publish when the upstream artifact still had usable rows (empty set equality passes).
+
+**Impact.** Medium for project artifacts; higher once remediation consumes classification/triage output.
+
+**Status.** Mitigated 2026-08-02 (`DECISIONS.md` D16). Guards abort publish when output is empty and upstream has usable content; `ALLOW_EMPTY_RESULT=1` bypass mirrors R10/D15.
+
+**Mitigation.** Plausibility checks in classification validation and triage validation; covered by `tests/run_synthetic_guards.zsh`.
+

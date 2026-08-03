@@ -2,6 +2,21 @@
 
 No version tags — this project has no releases yet, only dated task entries. Newest first.
 
+## 2026-08-02 (Charter closeout Phases 2–5 — hardening + remediation pilot)
+
+- **D16:** R11 plausibility guards on classification and triage; deliberate omission of `set -e` on Tasks 03–16 documented; dead classification `errors` list removed.
+- **D17:** `.gitignore` extended for classification/review CSV/JSON; large blobs untracked (`git rm --cached`); no history rewrite.
+- **D18/D19:** `REMEDIATION_DESIGN.md` + `scripts/lib/remediation_engine.zsh` / Task 17. Dry-run verified; limited `--apply --limit 5` (`REM-20260802-231738`) then full `--rollback` restored all 5 files (0 failed).
+- **Added:** `tests/run_synthetic_guards.zsh` (7/7 pass).
+- **Removed earlier:** 5.1 GB stray debug log (Phase 1).
+
+## 2026-08-02 (D16 — classification/triage plausibility guards + set -e decision)
+
+- **Added:** R11 plausibility guards in `scripts/lib/classification_engine.zsh` and `scripts/16_documents_triage.zsh` — refuse empty publish when upstream has usable rows/paths (`ALLOW_EMPTY_RESULT=1` bypass).
+- **Decided:** `set -e` remains deliberately omitted on Tasks 03–16; explicit status checks + R10/R11 guards are the failure-propagation strategy (`DECISIONS.md` D16).
+- **Removed:** dead `errors = []` path from classification generation summaries.
+- **Deferred:** fuzzy near-duplicate name matching remains out of scope for this phase.
+
 ## 2026-08-02 (Charter closeout Phase 1 — D15 commit + doc currency)
 
 - **Committed:** R10 zero-result guard (D15) in `scripts/lib/inventory_engine.zsh` plus matching `DECISIONS.md` / `RISK_REGISTER.md` / `QUALITY_GATES.md` updates.

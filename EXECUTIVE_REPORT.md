@@ -42,6 +42,4 @@ No user file has been modified, moved, renamed, deleted, or opened for content i
 
 ## Next phase
 
-1. Harden classification/triage with R10-style plausibility guards.
-2. Align `.gitignore` for generated classification/review data (no history rewrite).
-3. Design and pilot remediation: dry-run move-to-quarantine for Documents Batch 1, with rollback ledger and explicit `--apply` (`REMEDIATION_DESIGN.md`).
+Phases 2–5 of the Charter closeout are complete for planned scope: plausibility guards, synthetic harness, `.gitignore` hygiene, remediation design, and a limited Batch 1 apply+rollback pilot (`REM-20260802-231738`, 5 files, fully restored). Further Batch 1 applies require a new `DECISIONS.md` entry.

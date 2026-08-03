@@ -126,7 +126,6 @@ source_inventory_id = next(iter(inventory_ids))
 
 records = []
 warnings = []
-errors = []
 
 
 def add(full_path, rel_path, dimension, label, tier, reason, requires_review):
@@ -281,12 +280,6 @@ with open(out_summary, 'w', encoding='utf-8') as f:
             f.write(f"- ...and {len(warnings) - 50} more\n")
     else:
         f.write("- None\n")
-    f.write("\n## Errors\n")
-    if errors:
-        for e_ in errors:
-            f.write(f"- {e_}\n")
-    else:
-        f.write("- None\n")
     f.write("\n## Known limitations\n")
     f.write("- Duplicate-risk detection compares exact Name+SizeBytes only; fuzzy near-duplicate name matching "
             "(e.g. \"file copy.ext\", \"file (1).ext\") is not implemented in this version.\n")
@@ -305,16 +298,12 @@ with open(out_report, 'w', encoding='utf-8') as f:
             f"Low: {tier_counts.get('Low', 0)}\n")
     f.write(f"Review queue: {len(review_queue)}\n")
     f.write(f"Warnings: {len(warnings)}\n")
-    f.write(f"Errors: {len(errors)}\n")
     f.write(f"Safety result: no user file was modified, moved, renamed, deleted, copied, or opened for content "
             f"inspection. Input was inventory/{target_name}/metadata.csv only — the filesystem was not rescanned.\n")
 
-if errors:
-    sys.exit(1)
-
 print(f"Completed {classification_id}: {len(records)} records "
       f"({tier_counts.get('High', 0)} high / {tier_counts.get('Medium', 0)} medium / {tier_counts.get('Low', 0)} low), "
-      f"{len(review_queue)} in review queue, {len(warnings)} warnings, {len(errors)} errors.")
+      f"{len(review_queue)} in review queue, {len(warnings)} warnings.")
 PY
 )"
   local gen_exit=$?
@@ -325,7 +314,7 @@ PY
   fi
 
   if ! /usr/bin/python3 - "$CSV_PATH" "$JSON_PATH" "$SUMMARY_PATH" "$STAGED_REPORT_PATH" "$CLASSIFICATION_ID" "$INVENTORY_CSV" <<'PY'
-import csv, json, re, sys
+import csv, json, os, re, sys
 
 csv_path, json_path, summary_path, report_path, classification_id, inventory_csv_path = sys.argv[1:7]
 
@@ -347,6 +336,22 @@ if len(inv_ids) != 1:
 expected_source_id = next(iter(inv_ids))
 valid_paths = set(r['FullPath'] for r in inv_rows)
 valid_tiers = {'High', 'Medium', 'Low'}
+
+# R11 plausibility guard (DECISIONS.md D16): refuse to publish an empty
+# classification when the source inventory has usable non-package files.
+# Consistency checks above would pass (0 == 0) for a silently failed
+# generation — the same D14/R10 failure class one layer up the pipeline.
+usable_files = sum(
+    1 for r in inv_rows
+    if r.get('IsPackage') != 'true' and r.get('IsDirectory') == 'false'
+)
+allow_empty = os.environ.get('ALLOW_EMPTY_RESULT', '0') == '1'
+if usable_files > 0 and len(records) == 0 and not allow_empty:
+    raise SystemExit(
+        f"Plausibility guard: source inventory has {usable_files} usable file(s) but "
+        "classification produced 0 records. Refusing to publish; previous artifact untouched. "
+        "Rerun after fixing generation, or set ALLOW_EMPTY_RESULT=1 to bypass explicitly."
+    )
 
 for rec in records:
     if rec.get('ClassificationID') != classification_id:

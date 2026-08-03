@@ -1,0 +1,3 @@
+Rollback of REM-20260802-231738
+Restored: 5
+Failed: 0

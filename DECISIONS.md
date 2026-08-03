@@ -4,6 +4,50 @@ Architecture decision log. Newest first. Each entry: context, decision, conseque
 
 ---
 
+## D18 — Remediation design approved; dry-run engine authorized (2026-08-02)
+
+**Context.** Charter closeout plan Phase 5a–5b. Classification and triage are complete; remediation was only a placeholder in `CLASSIFICATION_DESIGN.md` §5.
+
+**Decision.** Approve `REMEDIATION_DESIGN.md`: move-to-quarantine only (no delete), quarantine root `/Users/eduardofgiovannini/Documents/_LifeOS_Quarantine/<RemediationID>/`, dry-run default, `--apply` gated by `LIFEOS_REMEDIATION_APPROVED`, `--limit` required for apply, rollback via `--rollback <RemediationID>`. Authorize implementation of `scripts/lib/remediation_engine.zsh` and Task 17 wrapper. Authorize dry-runs of Documents Batch 1 without further approval.
+
+**Status.** Implemented. Dry-run verified (`REM-20260802-231723`, 5 proposed, 0 applied).
+
+---
+
+## D19 — Limited Batch 1 apply+rollback pilot authorized (2026-08-02)
+
+**Context.** After successful dry-run, Phase 5c requires a tiny real move+rollback cycle to demonstrate Charter rollback capability.
+
+**Decision.** Authorize one `--apply --limit 5` of the five smallest Documents Batch 1 files, with `LIFEOS_REMEDIATION_APPROVED=D19`, followed immediately by `--rollback` of that RemediationID. No larger apply without a new DECISIONS entry.
+
+**Status.** Authorized for execution in the same session.
+
+---
+
+## D17 — Stop tracking generated classification/review CSV/JSON (2026-08-02)
+
+**Context.** Progress audit found ~660 MB of regenerable `classification/*/classification_proposal.{csv,json}` and `review/**/triage_assignments.{csv,json}` committed, inconsistent with inventory's `.gitignore` policy (`RISK_REGISTER.md` R3).
+
+**Decision.** Extend `.gitignore` to exclude those paths going forward. `git rm --cached` to untrack existing blobs; leave files on disk. **No history rewrite.** Keep human summaries (`summary.md`, `EXECUTIVE_SUMMARY.md`, `triage_batches.*`) tracked.
+
+**Status.** Implemented (Phase 4).
+
+---
+
+
+**Context.** The progress audit (2026-08-02) found that R10/D15 closed the empty-publish failure mode only in the inventory engine. Classification and triage validators check consistency (CSV/JSON parity, ID matching) but not plausibility — an empty-but-well-formed result would still publish when the source had usable rows. Independently, Tasks 03–16 use `set -uo pipefail` without `-e` (unlike Tasks 01–02), which enabled the original D14 silent-`find` failure; the audit asked whether to adopt `-e` or document deliberate omission.
+
+**Decision.**
+
+1. **R11 guards.** Added plausibility checks to `scripts/lib/classification_engine.zsh` and `scripts/16_documents_triage.zsh`: abort publish if output record/assignment count is 0 while the upstream artifact has usable rows/paths. Same `ALLOW_EMPTY_RESULT=1` bypass as D15.
+2. **`set -e` deliberately omitted** on shared-engine wrappers (03–16). Enabling `set -e` inside/around sourced functions with EXIT traps and intentional non-zero arithmetic (`(( total_directories += 1 ))` when starting from 0 can interact poorly with errexit in zsh) is a regression risk given this project's D7 trap-scoping incident. Instead, critical steps already use explicit status checks (`gen_exit`, validation `if ! python3`, `mv || return 1`), and the R10/R11 plausibility guards catch the empty-publish class. Tasks 01–02 keep `set -euo pipefail` because they are self-contained scripts without the shared-engine trap pattern.
+3. **Dead `errors` list removed** from classification generation (never appended to; permanently printed "None").
+4. **Fuzzy near-duplicate matching** remains deferred / declined for this phase (still disclosed in classification summaries).
+
+**Status.** Implemented. Verified via Phase 3 synthetic harness.
+
+---
+
 ## D15 — R10 zero-result validation guard added to the shared inventory engine (2026-08-02)
 
 **Context.** Operator directed a narrow follow-up to R10 (the gap D14 exposed and deliberately left unfixed): add the smallest possible validation guard so an unexpectedly zero-result inventory fails clearly instead of publishing misleading output. Explicit scope: shared inventory engine only, plus focused validation and minimum documentation — no rescan of any real target, no new large artifacts, no Documents triage work, no commit.
@@ -16,7 +60,7 @@ Architecture decision log. Newest first. Each entry: context, decision, conseque
 
 **Consequences.** Closes the specific failure mode from the D14 incident (silent `find` failure publishing an empty-but-consistent result) for every target using the shared engine, at the cost of one integer comparison — no new subprocess calls, no new I/O, no measurable runtime impact. Does not address R10's broader suggested future gate (comparing against the previous run's count to catch a large-but-nonzero silent drop) — that remains open and is explicitly out of scope here.
 
-**Status.** Implemented and logic-verified. Not run against any real target in this phase (none were rescanned, per instruction). Not committed — awaiting operator review.
+**Status.** Implemented, logic-verified, and committed (Phase 1 Charter closeout).
 
 ---
 

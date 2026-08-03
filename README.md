@@ -4,19 +4,22 @@ Local-first, read-only-first filesystem inventory and organization framework for
 
 ## Status
 
-Infrastructure & Inventory phase. See `PROJECT_CONTEXT.md` for current state and `EXECUTIVE_REPORT.md` for the latest summary.
+Inventory, classification, and Documents triage are complete for operator-approved scope. Remediation dry-run / limited apply+rollback pilot is available (Documents Batch 1). See `PROJECT_CONTEXT.md`, `EXECUTIVE_REPORT.md`, and `REMEDIATION_DESIGN.md`.
 
 ## Directory layout
 
 ```
-config/      Approved inventory targets (config/inventory_targets.yaml)
-docs/        Engine architecture and safety rules
-inventory/   One staging directory per approved target; holds metadata only
-logs/        Execution debug logs
-plans/       Reserved for future planning artifacts
-reports/     Human-readable run reports, one per task
-scripts/     Task scripts (zsh, run from repository root)
-templates/   Shared report template
+config/         Approved inventory targets (config/inventory_targets.yaml)
+docs/           Engine architecture and safety rules
+inventory/      Per-target metadata (CSV/JSON gitignored)
+classification/ Per-target classification proposals (CSV/JSON gitignored)
+review/         Triage batches (large assignment CSV/JSON gitignored)
+remediation/    Quarantine proposals and rollback ledgers
+logs/           Execution debug logs
+reports/        Human-readable run reports, one per task
+scripts/        Task scripts (zsh, run from repository root)
+tests/          Synthetic guard harness (no real user targets)
+templates/      Shared report template
 ```
 
 ## Requirements
@@ -65,3 +68,5 @@ Full rules: `docs/SAFETY_RULES.md`. Full governance: `PROJECT_CHARTER.md`.
 | QUALITY_GATES.md | Validation gates in the pipeline |
 | RISK_REGISTER.md | Known risks and mitigations |
 | CHANGELOG.md | Dated change history |
+| REMEDIATION_DESIGN.md | Move-to-quarantine remediation design |
+| CLASSIFICATION_DESIGN.md | Metadata-before-AI classification design |

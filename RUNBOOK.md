@@ -228,6 +228,32 @@ Output goes to `review/Documents/` (`EXECUTIVE_SUMMARY.md`, `triage_batches.csv/
 
 Do not commit until you've reviewed `review/Documents/EXECUTIVE_SUMMARY.md` — see `DECISIONS.md` D12.
 
+## Documents Batch 1 remediation (Task 17)
+
+See `REMEDIATION_DESIGN.md`. Move-to-quarantine only — **no deletion**. Dry-run is default.
+
+```
+# Dry-run (full Batch 1, or --limit N for a sample proposal)
+./scripts/17_documents_batch1_remediation.zsh
+./scripts/17_documents_batch1_remediation.zsh --limit 5
+
+# Apply requires DECISIONS approval id + limit (pilot pattern)
+LIFEOS_REMEDIATION_APPROVED=D19 ./scripts/17_documents_batch1_remediation.zsh --apply --limit 5
+
+# Rollback a completed apply by RemediationID
+./scripts/17_documents_batch1_remediation.zsh --rollback REM-YYYYMMDD-HHMMSS
+```
+
+Outputs: `remediation/Documents/{ledger,proposal,summary}` and `reports/17_documents_batch1_remediation.txt`. Quarantine files land under `~/Documents/_LifeOS_Quarantine/<RemediationID>/`.
+
+## Synthetic guard harness
+
+```
+./tests/run_synthetic_guards.zsh
+```
+
+Runs under `/tmp` only — never touches real user targets. Covers normal inventory, package prune, R10/R11 empty-publish guards, and classification happy path.
+
 ## Adding a new inventory target
 
 1. Confirm the target name and path already exist in `config/inventory_targets.yaml` and `inventory/<Target>/` exists (both are already true for all 8 configured targets).

@@ -4,21 +4,18 @@ Format: Now / Next / Later. Nothing moves left until the item to its left is clo
 
 ## Now
 
-- Phase 2 hardening: plausibility guards on classification and triage engines; `set -e` decision; dead `errors` list cleanup.
-- Phase 3: minimal synthetic-fixture regression harness.
-- Phase 4: `.gitignore` for generated classification/review CSV/JSON (going forward only; no history rewrite).
+- Charter closeout Phases 1–5 complete for the planned scope: D15–D19 committed, synthetic harness green, remediation dry-run + limited apply/rollback pilot demonstrated on Documents Batch 1.
 
 ## Next
 
-- Phase 5a: `REMEDIATION_DESIGN.md` — move-to-quarantine, rollback ledger, dry-run default, `--apply` gate. Hard stop for operator approval before any remediation code.
-- Phase 5b: `scripts/lib/remediation_engine.zsh` dry-run + Documents Batch 1 wrapper.
-- Phase 5c: Operator-gated limited `--apply` + rollback verification on a Batch 1 subset.
+- Optional larger Batch 1 quarantine applies only with a new `DECISIONS.md` approval (not unbounded).
+- Optional R10 large-but-nonzero drop gate (still open in `RISK_REGISTER.md`).
 
 ## Later
 
-- Larger Batch 1 quarantine applies after successful limited pilot.
-- Fuzzy near-duplicate name matching — deferred / declined for current phase (`DECISIONS.md`).
-- Broader remediation batches (2–5) only after Batch 1 pilot proves rollback.
+- Batches 2–5 remediation designs (separate approvals).
+- Fuzzy near-duplicate name matching — deferred.
+- Broader remediation after Batch 1 operational confidence.
 
 ## Explicit non-goals for this roadmap
 
