@@ -4,6 +4,16 @@ Architecture decision log. Newest first. Each entry: context, decision, conseque
 
 ---
 
+## D20 — Mid-size Batch 1 quarantine apply authorized (--limit 100, keep if clean) (2026-08-03)
+
+**Context.** D19 proved apply+rollback on 5 files. Operator approved the next concrete path: dry-run → `--apply --limit 100` (smallest Batch 1 files) → spot-check → keep quarantined if clean (rollback only on failure), then decide separately on multi-GB compilation caches.
+
+**Decision.** Authorize one Documents Batch 1 apply with `LIFEOS_REMEDIATION_APPROVED=D20` and `--limit 100`. Quarantine root unchanged (`~/Documents/_LifeOS_Quarantine/<RemediationID>/`). No deletion. Larger limits and multi-GB cache moves require a new DECISIONS entry.
+
+**Status.** Executed and kept quarantined: `REM-20260803-004958` — 100 applied / 0 failed (191 bytes total). Spot-check: 100/100 originals gone + quarantine present; 10/10 random size matches. Rollback available via `./scripts/17_documents_batch1_remediation.zsh --rollback REM-20260803-004958` if needed. Multi-GB compilation-cache moves still require a new DECISIONS entry.
+
+---
+
 ## D18 — Remediation design approved; dry-run engine authorized (2026-08-02)
 
 **Context.** Charter closeout plan Phase 5a–5b. Classification and triage are complete; remediation was only a placeholder in `CLASSIFICATION_DESIGN.md` §5.

@@ -2,6 +2,13 @@
 
 No version tags — this project has no releases yet, only dated task entries. Newest first.
 
+## 2026-08-03 (D20 — mid-size Batch 1 quarantine, --limit 100, kept)
+
+- **Decided:** operator approved dry-run → apply → spot-check → keep if clean for 100 smallest Batch 1 files (`DECISIONS.md` D20).
+- **Executed:** dry-run `REM-20260803-004952` (100 proposed); apply `REM-20260803-004958` — 100 applied, 0 failed, 191 bytes.
+- **Spot-check:** all 100 originals absent / quarantine present; 10/10 random sample size-matched. Kept quarantined (no rollback).
+- **Not authorized yet:** multi-GB CompilationCache moves — needs a separate DECISIONS entry.
+
 ## 2026-08-02 (Charter closeout Phases 2–5 — hardening + remediation pilot)
 
 - **D16:** R11 plausibility guards on classification and triage; deliberate omission of `set -e` on Tasks 03–16 documented; dead classification `errors` list removed.
