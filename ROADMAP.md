@@ -4,11 +4,11 @@ Format: Now / Next / Later. Nothing moves left until the item to its left is clo
 
 ## Now
 
-- Charter closeout Phases 1–5 complete for the planned scope: D15–D19 committed, synthetic harness green, remediation dry-run + limited apply/rollback pilot demonstrated on Documents Batch 1.
+- D20 mid-size Batch 1 quarantine complete and kept (`REM-20260803-004958`, 100 files). Decide whether to authorize multi-GB CompilationCache quarantine (new DECISIONS entry).
 
 ## Next
 
-- Optional larger Batch 1 quarantine applies only with a new `DECISIONS.md` approval (not unbounded).
+- Optional larger Batch 1 applies (e.g. 500 / full remaining Batch 1) with a new `DECISIONS.md` approval.
 - Optional R10 large-but-nonzero drop gate (still open in `RISK_REGISTER.md`).
 
 ## Later
