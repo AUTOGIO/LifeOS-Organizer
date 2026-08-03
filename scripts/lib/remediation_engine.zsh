@@ -7,10 +7,13 @@
 
 QUARANTINE_BASE="${QUARANTINE_BASE:-/Users/eduardofgiovannini/Documents/_LifeOS_Quarantine}"
 
-# run_documents_batch1_remediation [--apply] [--limit N] [--rollback REM-ID]
+# run_documents_batch1_remediation [--apply] [--limit N] [--order smallest|largest]
+#   [--match SUBSTR] [--rollback REM-ID]
 run_documents_batch1_remediation() {
   local DO_APPLY=0
   local LIMIT=0
+  local ORDER='smallest'
+  local MATCH=''
   local ROLLBACK_ID=''
   local ApprovalRef="${LIFEOS_REMEDIATION_APPROVED:-}"
 
@@ -19,6 +22,14 @@ run_documents_batch1_remediation() {
       --apply) DO_APPLY=1; shift ;;
       --limit)
         LIMIT="$2"
+        shift 2
+        ;;
+      --order)
+        ORDER="$2"
+        shift 2
+        ;;
+      --match)
+        MATCH="$2"
         shift 2
         ;;
       --rollback)
@@ -31,6 +42,11 @@ run_documents_batch1_remediation() {
         ;;
     esac
   done
+
+  if [[ "$ORDER" != 'smallest' && "$ORDER" != 'largest' ]]; then
+    print -u2 -- "ERROR: --order must be 'smallest' or 'largest' (got: $ORDER)"
+    return 1
+  fi
 
   local TASK_NUM='17'
   local TARGET_NAME='Documents'
@@ -74,8 +90,12 @@ run_documents_batch1_remediation() {
   # --- Rollback mode ---
   if [[ -n "$ROLLBACK_ID" ]]; then
     local LEDGER_CSV="$OUTPUT_DIR/ledger.csv"
-    if [[ ! -f "$LEDGER_CSV" ]]; then
-      print -u2 -- "ERROR: No ledger at $LEDGER_CSV"
+    local ARCHIVED_LEDGER="$OUTPUT_DIR/ledgers/${ROLLBACK_ID}.csv"
+    # Prefer archived per-ID ledger (survives later runs); fall back to current.
+    if [[ -f "$ARCHIVED_LEDGER" ]]; then
+      LEDGER_CSV="$ARCHIVED_LEDGER"
+    elif [[ ! -f "$LEDGER_CSV" ]]; then
+      print -u2 -- "ERROR: No ledger at $LEDGER_CSV or $ARCHIVED_LEDGER"
       return 1
     fi
     local rb_out
@@ -156,7 +176,7 @@ PY
       return 1
     fi
     if (( LIMIT <= 0 )); then
-      print -u2 -- "ERROR: First apply pilots require --limit N (>0). Refusing unbounded apply."
+      print -u2 -- "ERROR: Apply requires --limit N (>0). Refusing unbounded apply."
       return 1
     fi
   fi
@@ -169,15 +189,19 @@ PY
   local PROPOSAL_CSV="$RUN_DIR/proposal.csv"
   local SUMMARY_PATH="$RUN_DIR/summary.md"
   local STAGED_REPORT="$RUN_DIR/${TASK_NUM}_documents_batch1_remediation.txt"
+  local LEDGERS_DIR="$OUTPUT_DIR/ledgers"
+  /bin/mkdir -p "$LEDGERS_DIR"
 
   local gen_out
   gen_out="$(/usr/bin/python3 - "$TRIAGE_CSV" "$LEDGER_CSV" "$LEDGER_JSON" "$PROPOSAL_CSV" \
     "$SUMMARY_PATH" "$STAGED_REPORT" "$REMEDIATION_ID" "$TIMESTAMP" "$QROOT" \
-    "$LIMIT" "$DO_APPLY" "$ApprovalRef" "$QUARANTINE_BASE" <<'PY'
+    "$LIMIT" "$DO_APPLY" "$ApprovalRef" "$QUARANTINE_BASE" "$ORDER" "$MATCH" \
+    "$OUTPUT_DIR" <<'PY'
 import csv, json, os, shutil, sys
 
 (triage_csv, ledger_csv, ledger_json, proposal_csv, summary_md, report_path,
- rem_id, timestamp, qroot, limit_s, do_apply_s, approval_ref, qbase) = sys.argv[1:14]
+ rem_id, timestamp, qroot, limit_s, do_apply_s, approval_ref, qbase,
+ order, match, output_dir) = sys.argv[1:17]
 
 limit = int(limit_s)
 do_apply = do_apply_s == '1'
@@ -200,18 +224,54 @@ source_triage_id = next(iter(triage_ids))
 source_cls_id = next(iter(cls_ids))
 source_inv_id = next(iter(inv_ids))
 
-# Prefer smallest files for safe pilots
 def size_of(r):
     try:
         return int(r.get('SizeBytes') or 0)
     except ValueError:
         return 0
 
-batch1.sort(key=size_of)
+# Skip paths already applied in any archived/current ledger (idempotent reruns).
+already_applied = set()
+ledgers_dir = os.path.join(output_dir, 'ledgers')
+candidates = []
+if os.path.isdir(ledgers_dir):
+    for name in os.listdir(ledgers_dir):
+        if name.endswith('.csv'):
+            candidates.append(os.path.join(ledgers_dir, name))
+cur = os.path.join(output_dir, 'ledger.csv')
+if os.path.isfile(cur):
+    candidates.append(cur)
+for path in candidates:
+    try:
+        with open(path, newline='', encoding='utf-8') as f:
+            for row in csv.DictReader(f):
+                if row.get('Status') == 'applied':
+                    already_applied.add(row['OriginalFullPath'])
+    except Exception:
+        pass
+
+eligible = []
+skipped_missing = 0
+skipped_applied = 0
+skipped_match = 0
+for r in batch1:
+    p = r['FullPath']
+    if match and match not in p:
+        skipped_match += 1
+        continue
+    if p in already_applied:
+        skipped_applied += 1
+        continue
+    if not os.path.exists(p):
+        skipped_missing += 1
+        continue
+    eligible.append(r)
+
+eligible.sort(key=size_of, reverse=(order == 'largest'))
 if limit > 0:
-    selected = batch1[:limit]
+    selected = eligible[:limit]
 else:
-    selected = batch1
+    selected = eligible
 
 docs_root = '/Users/eduardofgiovannini/Documents'
 qbase_real = os.path.realpath(qbase)
@@ -246,8 +306,17 @@ for r in selected:
     })
 
 allow_empty = os.environ.get('ALLOW_EMPTY_RESULT', '0') == '1'
+if len(eligible) == 0 and len(batch1) > 0 and not allow_empty and limit > 0:
+    # Filter produced nothing eligible — still an actionable failure for apply/dry-run with limit
+    pass
 if len(batch1) > 0 and len(records) == 0 and not allow_empty:
-    print("ERROR: Plausibility guard: Batch 1 non-empty but 0 proposals", file=sys.stderr)
+    print(
+        f"ERROR: Plausibility guard: 0 proposals after filters "
+        f"(match={match!r}, order={order}, skipped_match={skipped_match}, "
+        f"skipped_applied={skipped_applied}, skipped_missing={skipped_missing}, "
+        f"eligible={len(eligible)}). Refusing to publish.",
+        file=sys.stderr,
+    )
     sys.exit(1)
 
 # Write proposal/ledger before any mutation
@@ -317,12 +386,17 @@ with open(summary_md, 'w', encoding='utf-8') as f:
     f.write(f"- Source Inventory ID: {source_inv_id}\n")
     f.write(f"- Timestamp: {timestamp}\n")
     f.write(f"- Quarantine root: {qroot}\n")
+    f.write(f"- Order: {order}\n")
+    f.write(f"- Match filter: {match or '(none)'}\n")
+    f.write(f"- Skipped (match/applied/missing): {skipped_match}/{skipped_applied}/{skipped_missing}\n")
+    f.write(f"- Eligible after filters: {len(eligible)}\n")
     f.write(f"- Proposed moves: {len(records)}\n")
     f.write(f"- Total size (bytes): {total_bytes:,}\n")
     f.write(f"- ApprovalRef: {approval_ref or '(none — dry-run)'}\n")
     if do_apply:
         f.write(f"- Applied: {applied}\n- Failed: {failed}\n")
     f.write("\n## Safety\n\n- Action is move-to-quarantine only. No deletion.\n")
+    f.write("- Same-volume quarantine reorganizes paths; it does not free disk until files are removed from quarantine by a separate, explicitly approved process.\n")
     f.write("- Rollback via: `./scripts/17_documents_batch1_remediation.zsh --rollback " + rem_id + "`\n")
     if errors:
         f.write("\n## Errors\n")
@@ -332,7 +406,9 @@ with open(summary_md, 'w', encoding='utf-8') as f:
 with open(report_path, 'w', encoding='utf-8') as f:
     f.write(f"LifeOS Organizer — Documents Batch 1 Remediation ({mode})\n")
     f.write(f"Remediation ID: {rem_id}\n")
+    f.write(f"Order: {order}  Match: {match or '(none)'}\n")
     f.write(f"Proposed: {len(records)}  Applied: {applied}  Failed: {failed}\n")
+    f.write(f"Total size: {total_bytes} bytes\n")
     f.write(f"Quarantine: {qroot}\n")
     f.write(f"ApprovalRef: {approval_ref or '(none)'}\n")
     f.write("No deletion capability invoked.\n")
@@ -343,7 +419,8 @@ if do_apply and failed:
         print(e, file=sys.stderr)
     # Still publish ledger so partial apply is recoverable
 else:
-    print(f"Completed {rem_id} ({mode}): {len(records)} proposed, {applied} applied, {failed} failed, {total_bytes} bytes.")
+    print(f"Completed {rem_id} ({mode}): {len(records)} proposed, {applied} applied, {failed} failed, {total_bytes} bytes "
+          f"(order={order}, match={match or 'none'}, eligible={len(eligible)}).")
 PY
 )"
   local gen_rc=$?
@@ -395,10 +472,24 @@ PY
     return 1
   fi
 
+  # Archive prior published ledger under ledgers/<RemediationID>.* so later
+  # runs do not erase rollback history (D21 practice).
+  if [[ -f "$OUTPUT_DIR/ledger.csv" ]]; then
+    local prior_id
+    prior_id="$(/usr/bin/awk -F',' 'NR==2 { gsub(/\r/,""); print $1; exit }' "$OUTPUT_DIR/ledger.csv")"
+    if [[ -n "$prior_id" && "$prior_id" == REM-* ]]; then
+      /bin/cp "$OUTPUT_DIR/ledger.csv" "$LEDGERS_DIR/${prior_id}.csv" 2>/dev/null || true
+      [[ -f "$OUTPUT_DIR/ledger.json" ]] && /bin/cp "$OUTPUT_DIR/ledger.json" "$LEDGERS_DIR/${prior_id}.json" 2>/dev/null || true
+    fi
+  fi
+
   /bin/mv "$LEDGER_CSV" "$OUTPUT_DIR/ledger.csv" || return 1
   /bin/mv "$LEDGER_JSON" "$OUTPUT_DIR/ledger.json" || return 1
   /bin/mv "$PROPOSAL_CSV" "$OUTPUT_DIR/proposal.csv" || return 1
   /bin/mv "$SUMMARY_PATH" "$OUTPUT_DIR/summary.md" || return 1
   /bin/mv "$STAGED_REPORT" "$FINAL_REPORT" || return 1
+  # Also archive this run's ledger immediately for durable rollback.
+  /bin/cp "$OUTPUT_DIR/ledger.csv" "$LEDGERS_DIR/${REMEDIATION_ID}.csv" || true
+  /bin/cp "$OUTPUT_DIR/ledger.json" "$LEDGERS_DIR/${REMEDIATION_ID}.json" || true
   print -- "$gen_out"
 }

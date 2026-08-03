@@ -4,6 +4,21 @@ Architecture decision log. Newest first. Each entry: context, decision, conseque
 
 ---
 
+## D21 — CompilationCache largest-first quarantine (11 multi-GB files) (2026-08-03)
+
+**Context.** D20 quarantined 100 smallest Batch 1 stubs (191 B). Remaining Batch 1 impact is dominated by 11 `CompilationCache.noindex` files (~146 GB). Operator directed execution of the best-practice next path: largest-first, path-filtered, graduated apply with ledger archival.
+
+**Decision.**
+
+1. Extend remediation engine with `--order largest|smallest`, `--match SUBSTR`, skip already-applied/missing paths, and archive ledgers under `remediation/Documents/ledgers/<RemediationID>.*`.
+2. Authorize one apply: `LIFEOS_REMEDIATION_APPROVED=D21 ./scripts/17_documents_batch1_remediation.zsh --apply --limit 11 --order largest --match CompilationCache.noindex`.
+3. Spot-check; keep quarantined if clean. Note: same-volume `mv` reorganizes but does not free disk until a separately approved purge.
+4. Remaining CompilationCache / Batch 1 files require a new DECISIONS entry.
+
+**Status.** Executed and kept quarantined: `REM-20260803-005600` — 11 applied / 0 failed (146,028,888,064 bytes). All originals gone, quarantine size-matched; D20 ledger archived at `remediation/Documents/ledgers/REM-20260803-004958.csv`. Remaining 25 CompilationCache.noindex files (~142 KB residual metadata scale — verify) and other Batch 1 paths need a new DECISIONS entry. Same-volume move did not free disk (still ~94% used).
+
+---
+
 ## D20 — Mid-size Batch 1 quarantine apply authorized (--limit 100, keep if clean) (2026-08-03)
 
 **Context.** D19 proved apply+rollback on 5 files. Operator approved the next concrete path: dry-run → `--apply --limit 100` (smallest Batch 1 files) → spot-check → keep quarantined if clean (rollback only on failure), then decide separately on multi-GB compilation caches.

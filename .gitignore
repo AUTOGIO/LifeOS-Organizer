@@ -13,7 +13,7 @@ remediation/**/ledger.csv
 remediation/**/ledger.json
 remediation/**/proposal.csv
 remediation/**/proposal.json
-
+remediation/**/ledgers/
 logs/*.log
 logs/.task*.lock/
 .DS_Store

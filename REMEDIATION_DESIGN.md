@@ -20,8 +20,12 @@ This phase implements Charter principles 4–6: human approval before mutation, 
 |---|---|---|
 | Dry-run (default) | none | Build proposal + ledger under `remediation/Documents/`. **Never** calls `mv` on user paths. |
 | Apply | `--apply` | Requires `LIFEOS_REMEDIATION_APPROVED=<ApprovalRef>` env (must match a `DECISIONS.md` id, e.g. `D19`). Moves files per ledger. |
-| Limit | `--limit N` | Cap number of moves (smallest Batch 1 files first) — required for first pilot. |
-| Rollback | `--rollback <RemediationID>` | Reverse-move every ledger row with `Status=applied` for that ID back to `OriginalFullPath`. |
+| Limit | `--limit N` | Cap number of moves. Required for `--apply`. |
+| Order | `--order smallest\|largest` | Selection order after filters. Default `smallest` (safe pilots). Use `largest` for CompilationCache disk-impact runs. |
+| Match | `--match SUBSTR` | Keep only Batch 1 paths containing SUBSTR (e.g. `CompilationCache.noindex`). |
+| Rollback | `--rollback <RemediationID>` | Reverse-move every ledger row with `Status=applied` for that ID. Reads `remediation/Documents/ledgers/<ID>.csv` when present so later runs do not erase history. |
+
+Idempotency: paths already `Status=applied` in any archived/current ledger, and paths missing on disk, are skipped before `--limit` is applied.
 
 ## 3. Ledger schema
 

@@ -237,10 +237,14 @@ See `REMEDIATION_DESIGN.md`. Move-to-quarantine only — **no deletion**. Dry-ru
 ./scripts/17_documents_batch1_remediation.zsh
 ./scripts/17_documents_batch1_remediation.zsh --limit 5
 
-# Apply requires DECISIONS approval id + limit (pilot pattern)
-LIFEOS_REMEDIATION_APPROVED=D19 ./scripts/17_documents_batch1_remediation.zsh --apply --limit 5
+# Largest-first CompilationCache sample (dry-run)
+./scripts/17_documents_batch1_remediation.zsh --limit 11 --order largest --match CompilationCache.noindex
 
-# Rollback a completed apply by RemediationID
+# Apply requires DECISIONS approval id + limit (pilot pattern)
+LIFEOS_REMEDIATION_APPROVED=D20 ./scripts/17_documents_batch1_remediation.zsh --apply --limit 5
+LIFEOS_REMEDIATION_APPROVED=D21 ./scripts/17_documents_batch1_remediation.zsh --apply --limit 11 --order largest --match CompilationCache.noindex
+
+# Rollback a completed apply by RemediationID (uses ledgers/<ID>.csv when archived)
 ./scripts/17_documents_batch1_remediation.zsh --rollback REM-YYYYMMDD-HHMMSS
 ```
 

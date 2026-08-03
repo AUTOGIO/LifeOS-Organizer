@@ -1,6 +1,8 @@
 LifeOS Organizer — Documents Batch 1 Remediation (APPLY)
-Remediation ID: REM-20260803-004958
-Proposed: 100  Applied: 100  Failed: 0
-Quarantine: /Users/eduardofgiovannini/Documents/_LifeOS_Quarantine/REM-20260803-004958
-ApprovalRef: D20
+Remediation ID: REM-20260803-005600
+Order: largest  Match: CompilationCache.noindex
+Proposed: 11  Applied: 11  Failed: 0
+Total size: 146028888064 bytes
+Quarantine: /Users/eduardofgiovannini/Documents/_LifeOS_Quarantine/REM-20260803-005600
+ApprovalRef: D21
 No deletion capability invoked.
