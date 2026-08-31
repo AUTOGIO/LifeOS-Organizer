@@ -9,7 +9,7 @@
 
 set -uo pipefail
 
-REPO='/Users/eduardofgiovannini/Documents/GitHub/LifeOS-Organizer'
+REPO="${0:A:h:h}"
 SCRATCH="$(/usr/bin/mktemp -d /tmp/lifeos_synth.XXXXXX)"
 PASS=0
 FAIL=0

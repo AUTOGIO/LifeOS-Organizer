@@ -16,7 +16,7 @@
 
 set -uo pipefail
 
-PROJECT_DIR='/Users/eduardofgiovannini/Documents/GitHub/LifeOS-Organizer'
+PROJECT_DIR="${0:A:h:h}"
 TARGET_NAME='Documents'
 TASK_NUM='16'
 
