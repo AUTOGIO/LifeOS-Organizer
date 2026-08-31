@@ -14,7 +14,7 @@
 
 set -uo pipefail
 
-PROJECT_DIR='/Users/eduardofgiovannini/Documents/GitHub/LifeOS-Organizer'
+PROJECT_DIR="${0:A:h:h}"
 source "$PROJECT_DIR/scripts/lib/classification_engine.zsh"
 
 run_classification_task 10 Downloads

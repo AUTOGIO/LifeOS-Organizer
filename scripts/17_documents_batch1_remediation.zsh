@@ -5,7 +5,7 @@
 
 set -uo pipefail
 
-PROJECT_DIR='/Users/eduardofgiovannini/Documents/GitHub/LifeOS-Organizer'
+PROJECT_DIR="${0:A:h:h}"
 source "$PROJECT_DIR/scripts/lib/remediation_engine.zsh"
 
 run_documents_batch1_remediation "$@"

@@ -30,7 +30,7 @@
 
 set -euo pipefail
 
-PROJECT_DIR='/Users/eduardofgiovannini/Documents/GitHub/LifeOS-Organizer'
+PROJECT_DIR="${0:A:h:h}"
 CONFIG_PATH="$PROJECT_DIR/config/inventory_targets.yaml"
 TEMPLATE_PATH="$PROJECT_DIR/templates/inventory_report_template.md"
 REPORT_PATH="$PROJECT_DIR/reports/02_inventory_engine.txt"

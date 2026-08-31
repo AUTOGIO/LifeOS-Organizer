@@ -3,7 +3,7 @@
 
 set -euo pipefail
 
-PROJECT_DIR='/Users/eduardofgiovannini/Documents/GitHub/LifeOS-Organizer'
+PROJECT_DIR="${0:A:h:h}"
 REPORT_PATH="$PROJECT_DIR/reports/01_environment_baseline.txt"
 LOCK_DIR="$PROJECT_DIR/logs/.task01.lock"
 

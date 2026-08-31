@@ -11,7 +11,7 @@
 
 set -uo pipefail
 
-PROJECT_DIR='/Users/eduardofgiovannini/Documents/GitHub/LifeOS-Organizer'
+PROJECT_DIR="${0:A:h:h}"
 source "$PROJECT_DIR/scripts/lib/inventory_engine.zsh"
 
 run_inventory_task 09 CloudStorage 1
